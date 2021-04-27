@@ -8,7 +8,7 @@ from config import Config, load_pkl, pkl_parser
 
 class Generator(Dataset):
     def __init__(self, cfg, env):
-        self.data = env.get_batch_nodes(cfg.n_samples)
+        self.data = env.get_batch_blocks(cfg.n_samples)
 
     def __getitem__(self, idx):
         return self.data[idx]
