@@ -9,7 +9,6 @@ class PtrNet2(nn.Module):
         super().__init__()
         self.Embedding = nn.Linear(2, cfg.embed, bias=False)
         self.Encoder = nn.LSTM(input_size=cfg.embed, hidden_size=cfg.hidden, batch_first=True)
-        self.Decoder = nn.LSTM(input_size=cfg.embed, hidden_size=cfg.hidden, batch_first=True)
         if torch.cuda.is_available():
             self.Vec = nn.Parameter(torch.cuda.FloatTensor(cfg.embed))
         else:
@@ -30,14 +29,14 @@ class PtrNet2(nn.Module):
             nn.init.uniform_(param.data, init_min, init_max)
 
     def forward(self, x, device):
-        '''	x: (batch, city_t, 2)
-            enc_h: (batch, city_t, embed)
+        '''	x: (batch, block_num, process_num)
+            enc_h: (batch, block_num, embed)
             query(Decoder input): (batch, 1, embed)
             h: (1, batch, embed)
             return: pred_l: (batch)
         '''
         x = x.to(device)
-        batch, city_t, xy = x.size()
+        batch, block_num, xy = x.size()
         embed_enc_inputs = self.Embedding(x)
         embed = embed_enc_inputs.size(2)
         enc_h, (h, c) = self.Encoder(embed_enc_inputs, None)
@@ -75,10 +74,10 @@ class PtrNet2(nn.Module):
         u2 = self.W_ref(ref.permute(0, 2, 1))  # u2: (batch, 128, city_t)
         V = self.Vec.unsqueeze(0).unsqueeze(0).repeat(ref.size(0), 1, 1)
         u = torch.bmm(V, torch.tanh(u1 + u2)).squeeze(1)
-        # V: (batch, 1, 128) * u1+u2: (batch, 128, city_t) => u: (batch, 1, city_t) => (batch, city_t)
+        # V: (batch, 1, 128) * u1+u2: (batch, 128,block_num) => u: (batch, 1, block_num) => (batch, block_num)
         a = F.softmax(u, dim=1)
         d = torch.bmm(u2, a.unsqueeze(2)).squeeze(2)
-        # u2: (batch, 128, city_t) * a: (batch, city_t, 1) => d: (batch, 128)
+        # u2: (batch, 128, block_num) * a: (batch, block_num, 1) => d: (batch, 128)
         return d
 
 
