@@ -79,7 +79,7 @@ class PtrNet1(nn.Module):
 
             pi_list.append(next_block)
             log_ps.append(log_p)
-            mask += torch.zeros((batch, block_num), device=device).scatter_(dim=1, index=block_num.unsqueeze(1), value=1)
+            mask += torch.zeros((batch, block_num), device=device).scatter_(dim=1, index=next_block.unsqueeze(1), value=1)
 
         pi = torch.stack(pi_list, dim=1)
         ll = self.get_log_likelihood(torch.stack(log_ps, 1), pi)

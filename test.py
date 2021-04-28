@@ -1,6 +1,6 @@
 import torch
 from time import time
-from env import Env_tsp
+from env import PanelBlockShop
 from config import Config, load_pkl, pkl_parser
 from search import sampling, active_search
 

@@ -60,11 +60,11 @@ class PanelBlockShop():
 
         process_time = np.zeros((n_samples * self.block_num, self.process_num))
         for i in range(self.process_num):
-            r = np.round(stats.lognorm.rvs(shape=shape[i], loc=0, scale=scale[i], size=n_samples * self.block_num), 1)
+            r = np.round(stats.lognorm.rvs(shape[i], loc=0, scale=scale[i], size=n_samples * self.block_num), 1)
             process_time[:, i] = r
         process_time = process_time.reshape((n_samples, self.block_num, self.process_num))
 
-        return torch.FloatTensor(process_time, device=device).resize()
+        return torch.FloatTensor(process_time, device=device)
 
     def stack_random_sequence(self):
         '''
@@ -151,7 +151,7 @@ class PanelBlockShop():
                 df[(i, 'start_time')] = 0.0
                 df[(i, 'process_time')] = blocks[:, i].cpu().numpy()
                 df[(i, 'process')] = "Process{0}".format(i)
-        panel_blocks = [Part(df.index[i], df.loc[i]) for i in sequence]
+        panel_blocks = [Part(i, df.loc[i]) for i in sequence.cpu().numpy()]
 
         env = simpy.Environment()
         model = {}
@@ -170,7 +170,9 @@ class PanelBlockShop():
         env.run()
         C = model["Sink"].last_arrival
 
-        return C
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+        return torch.FloatTensor([C], device=device)
 
     def get_random_sequence(self):
         '''

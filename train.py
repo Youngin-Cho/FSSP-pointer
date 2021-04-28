@@ -44,16 +44,16 @@ def train_model(cfg, env, log_path=None):
     dataset = Generator(cfg, env)
     dataloader = DataLoader(dataset, batch_size=cfg.batch, shuffle=True)
 
-    ave_act_loss, ave_L = 0., 0.
-    min_L, cnt = 1e7, 0
+    ave_act_loss, ave_C = 0., 0.
+    min_C, cnt = 1e7, 0
     t1 = time()
     for i, inputs in enumerate(dataloader):
         inputs = inputs.to(device)
-        pred_tour, ll = act_model(inputs, device)
-        real_l = env.stack_l_fast(inputs, pred_tour)
+        pred_seq, ll = act_model(inputs, device)
+        real_C = env.stack_C(inputs, pred_seq)
         if cfg.mode == 'train':
-            pred_l = cri_model(inputs, device)
-            cri_loss = mse_loss(pred_l, real_l.detach())
+            pred_C = cri_model(inputs, device)
+            cri_loss = mse_loss(pred_C, real_C.detach())
             cri_optim.zero_grad()
             cri_loss.backward()
             nn.utils.clip_grad_norm_(cri_model.parameters(), max_norm=1., norm_type=2)
@@ -62,12 +62,12 @@ def train_model(cfg, env, log_path=None):
                 cri_lr_scheduler.step()
         elif cfg.mode == 'train_emv':
             if i == 0:
-                L = real_l.detach().mean()
+                C = real_C.detach().mean()
             else:
-                L = (L * 0.9) + (0.1 * real_l.detach().mean())
-            pred_l = L
+                C = (C * 0.9) + (0.1 * real_C.detach().mean())
+            pred_C = C
 
-        adv = real_l.detach() - pred_l.detach()
+        adv = real_C.detach() - pred_C.detach()
         act_loss = (adv * ll).mean()
         act_optim.zero_grad()
         act_loss.backward()
@@ -79,13 +79,13 @@ def train_model(cfg, env, log_path=None):
         ave_act_loss += act_loss.item()
         if cfg.mode == 'train':
             ave_cri_loss += cri_loss.item()
-        ave_L += real_l.mean().item()
+        ave_C += real_C.mean().item()
 
         if i % cfg.log_step == 0:
             t2 = time()
             if cfg.mode == 'train':
                 print('step:%d/%d, actic loss:%1.3f, critic loss:%1.3f, L:%1.3f, %dmin%dsec' % (
-                i, cfg.steps, ave_act_loss / (i + 1), ave_cri_loss / (i + 1), ave_L / (i + 1), (t2 - t1) // 60,
+                i, cfg.steps, ave_act_loss / (i + 1), ave_cri_loss / (i + 1), ave_C / (i + 1), (t2 - t1) // 60,
                 (t2 - t1) % 60))
                 if cfg.islogger:
                     if log_path is None:
@@ -95,12 +95,12 @@ def train_model(cfg, env, log_path=None):
                     else:
                         with open(log_path, 'a') as f:
                             f.write('%d,%1.4f,%1.4f,%1.4f,%dmin%dsec\n' % (
-                            i, ave_act_loss / (i + 1), ave_cri_loss / (i + 1), ave_L / (i + 1), (t2 - t1) // 60,
+                            i, ave_act_loss / (i + 1), ave_cri_loss / (i + 1), ave_C / (i + 1), (t2 - t1) // 60,
                             (t2 - t1) % 60))
 
             elif cfg.mode == 'train_emv':
                 print('step:%d/%d, actic loss:%1.3f, L:%1.3f, %dmin%dsec' % (
-                i, cfg.steps, ave_act_loss / (i + 1), ave_L / (i + 1), (t2 - t1) // 60, (t2 - t1) % 60))
+                i, cfg.steps, ave_act_loss / (i + 1), ave_C / (i + 1), (t2 - t1) // 60, (t2 - t1) % 60))
                 if cfg.islogger:
                     if log_path is None:
                         log_path = cfg.log_dir + '%s_%s_train_emv.csv' % (date, cfg.task)  # cfg.log_dir = ./Csv/
@@ -109,9 +109,9 @@ def train_model(cfg, env, log_path=None):
                     else:
                         with open(log_path, 'a') as f:
                             f.write('%d,%1.4f,%1.4f,%dmin%dsec\n' % (
-                            i, ave_act_loss / (i + 1), ave_L / (i + 1), (t2 - t1) // 60, (t2 - t1) % 60))
-            if (ave_L / (i + 1) < min_L):
-                min_L = ave_L / (i + 1)
+                            i, ave_act_loss / (i + 1), ave_C / (i + 1), (t2 - t1) // 60, (t2 - t1) % 60))
+            if (ave_C / (i + 1) < min_C):
+                min_C = ave_C / (i + 1)
             else:
                 cnt += 1
                 print(f'cnt: {cnt}/20')
