@@ -64,7 +64,7 @@ class PanelBlockShop():
             process_time[:, i] = r
         process_time = process_time.reshape((n_samples, self.block_num, self.process_num))
 
-        return torch.FloatTensor(process_time, device=device)
+        return torch.FloatTensor(process_time).to(device)
 
     def stack_random_sequence(self):
         '''
@@ -139,6 +139,27 @@ class PanelBlockShop():
         return C:(1)
         '''
 
+        finish_time_temp = np.zeros(self.process_num)
+        for i in range(self.block_num):
+            finish_time = finish_time_temp + blocks[i, :].cou().numpy()
+            for j in range(self.process_num - 1):
+                if blocks[i, j].cou().numpy() == 0.0:
+                    finish_time[i + 1:] += (finish_time_temp[i + 1] - finish_time[i - 1])
+                    finish_time[i - 1] = finish_time_temp[i + 1]
+                    finish_time[i] = finish_time_temp[i]
+                    continue
+                delay = finish_time_temp[i + 1] - finish_time[i]
+                if delay > 0.0:
+                    finish_time[i:] += delay
+                if (i == self.process_num - 2) and (blocks[i, j+1].cou().numpy() == 0.0):
+                    if delay > 0.0:
+                        finish_time[i:] -= delay
+                    finish_time[-1] = finish_time_temp[-1]
+            finish_time_temp = finish_time
+        C = finish_time_temp[-1]
+        print(C)
+
+
         columns = pd.MultiIndex.from_product([[i for i in range(self.process_num + 1)],
                                               ['start_time', 'process_time', 'process']])
         df = pd.DataFrame(columns=columns, index=[i for i in range(self.block_num)])
@@ -169,10 +190,11 @@ class PanelBlockShop():
 
         env.run()
         C = model["Sink"].last_arrival
+        print(C)
 
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        return torch.FloatTensor([C], device=device)
+        return torch.FloatTensor([C]).to(device)
 
     def get_random_sequence(self):
         '''

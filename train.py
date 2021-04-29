@@ -99,7 +99,7 @@ def train_model(cfg, env, log_path=None):
                             (t2 - t1) % 60))
 
             elif cfg.mode == 'train_emv':
-                print('step:%d/%d, actic loss:%1.3f, L:%1.3f, %dmin%dsec' % (
+                print('step:%d/%d, actic loss:%1.3f, C:%1.3f, %dmin%dsec' % (
                 i, cfg.steps, ave_act_loss / (i + 1), ave_C / (i + 1), (t2 - t1) // 60, (t2 - t1) % 60))
                 if cfg.islogger:
                     if log_path is None:
@@ -114,8 +114,8 @@ def train_model(cfg, env, log_path=None):
                 min_C = ave_C / (i + 1)
             else:
                 cnt += 1
-                print(f'cnt: {cnt}/20')
-                if (cnt >= 20):
+                print(f'cnt: {cnt}/50')
+                if (cnt >= 50):
                     print('early stop, average cost cant decrease anymore')
                     if log_path is not None:
                         with open(log_path, 'a') as f:

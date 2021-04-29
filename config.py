@@ -39,7 +39,7 @@ def argparser():
     parser.add_argument('--is_lr_decay', action='store_false', help='flag learning rate scheduler default true')
     parser.add_argument('--lr_decay', metavar='LRD', type=float, default=0.98,
                         help='learning rate scheduler, decay by a factor of 0.98 ')
-    parser.add_argument('--lr_decay_step', metavar='LRDS', type=int, default=1e2,
+    parser.add_argument('--lr_decay_step', metavar='LRDS', type=int, default=2e2,
                         help='learning rate scheduler, decay every 100 steps')
 
     # inference

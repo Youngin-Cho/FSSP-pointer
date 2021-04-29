@@ -42,7 +42,7 @@ def search_tour(cfg, env):
 
 if __name__ == '__main__':
     cfg = load_pkl(pkl_parser().path)
-    env = Env_tsp(cfg)
+    env = PanelBlockShop(cfg)
 
     # inputs = env.stack_nodes()
     # ~ tours = env.stack_random_tours()
