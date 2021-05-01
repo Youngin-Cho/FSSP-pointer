@@ -111,11 +111,12 @@ def train_model(cfg, env, log_path=None):
                             f.write('%d,%1.4f,%1.4f,%dmin%dsec\n' % (
                             i, ave_act_loss / (i + 1), ave_C / (i + 1), (t2 - t1) // 60, (t2 - t1) % 60))
             if (ave_C / (i + 1) < min_C):
+                cnt = 0
                 min_C = ave_C / (i + 1)
             else:
                 cnt += 1
-                print(f'cnt: {cnt}/50')
-                if (cnt >= 50):
+                print(f'cnt: {cnt}/100')
+                if (cnt >= 100):
                     print('early stop, average cost cant decrease anymore')
                     if log_path is not None:
                         with open(log_path, 'a') as f:

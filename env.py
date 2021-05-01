@@ -138,63 +138,25 @@ class PanelBlockShop():
         C(= total makespan)
         return C:(1)
         '''
+        blocks_numpy = blocks.cpu().numpy()
+        sequence_numpy = sequence.cpu().numpy()
 
-        finish_time_temp = np.zeros(self.process_num)
-        for i in range(self.block_num):
-            finish_time = finish_time_temp + blocks[i, :].cou().numpy()
-            for j in range(self.process_num - 1):
-                if blocks[i, j].cou().numpy() == 0.0:
-                    finish_time[i + 1:] += (finish_time_temp[i + 1] - finish_time[i - 1])
-                    finish_time[i - 1] = finish_time_temp[i + 1]
-                    finish_time[i] = finish_time_temp[i]
-                    continue
-                delay = finish_time_temp[i + 1] - finish_time[i]
-                if delay > 0.0:
-                    finish_time[i:] += delay
-                if (i == self.process_num - 2) and (blocks[i, j+1].cou().numpy() == 0.0):
-                    if delay > 0.0:
-                        finish_time[i:] -= delay
-                    finish_time[-1] = finish_time_temp[-1]
-            finish_time_temp = finish_time
-        C = finish_time_temp[-1]
-        print(C)
+        temp = np.zeros((self.block_num + 1, self.process_num + 1))
+        for i in range(1, self.block_num + 1):
+            temp[i, 0] = 0
+            for j in range(1, self.process_num + 1):
+                if i == 1:
+                    temp[0, j] = 0
 
-
-        columns = pd.MultiIndex.from_product([[i for i in range(self.process_num + 1)],
-                                              ['start_time', 'process_time', 'process']])
-        df = pd.DataFrame(columns=columns, index=[i for i in range(self.block_num)])
-        for i in range(self.process_num + 1):
-            if i == self.process_num:
-                df[(i, 'start_time')] = None
-                df[(i, 'process_time')] = None
-                df[(i, 'process')] = 'Sink'
-            else:
-                df[(i, 'start_time')] = 0.0
-                df[(i, 'process_time')] = blocks[:, i].cpu().numpy()
-                df[(i, 'process')] = "Process{0}".format(i)
-        panel_blocks = [Part(i, df.loc[i]) for i in sequence.cpu().numpy()]
-
-        env = simpy.Environment()
-        model = {}
-
-        event_path = "./simulation"
-        if not os.path.exists(event_path):
-            os.makedirs(event_path)
-
-        monitor = Monitor(event_path + '/event_PBS.csv')
-        source = Source(env, "Source", panel_blocks, model, monitor)
-        for i in range(self.process_num + 1):
-            model['Process{0}'.format(i)] = Process(env, 'Process{0}'.format(i), 1, model, monitor, qlimit=1)
-            if i == self.process_num:
-                model['Sink'] = Sink(env, 'Sink', monitor)
-
-        env.run()
-        C = model["Sink"].last_arrival
-        print(C)
+                if temp[i - 1, j] > temp[i, j - 1]:
+                    temp[i, j] = temp[i - 1, j] + blocks_numpy[sequence_numpy[i - 1], j - 1]
+                else:
+                    temp[i, j] = temp[i, j - 1] + blocks_numpy[sequence_numpy[i - 1], j - 1]
+        C_max = temp[self.block_num, self.process_num]
 
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        return torch.FloatTensor([C]).to(device)
+        return torch.FloatTensor([C_max]).to(device)
 
     def get_random_sequence(self):
         '''

@@ -6,28 +6,28 @@ from search import sampling, active_search
 
 
 def search_tour(cfg, env):
-    test_input = env.get_nodes(cfg.seed)
+    test_input = env.get_blocks(cfg.seed)
 
     # random
-    print('generate random tour...')
-    random_tour = env.get_random_tour()
-    env.show(test_input, random_tour)
+    # print('generate random tour...')
+    # random_tour = env.get_random_tour()
+    # env.show(test_input, random_tour)
 
     # simplest way
     print('sampling ...')
     t1 = time()
-    pred_tour = sampling(cfg, env, test_input)
+    pred_sequence = sampling(cfg, env, test_input)
     t2 = time()
     print('%dmin %1.2fsec\n' % ((t2 - t1) // 60, (t2 - t1) % 60))
-    env.show(test_input, pred_tour)
+    # env.show(test_input, pred_tour)
 
     # active search, update parameters during test
-    print('active search ...')
-    t1 = time()
-    pred_tour = active_search(cfg, env, test_input)
-    t2 = time()
-    print('%dmin %1.2fsec\n' % ((t2 - t1) // 60, (t2 - t1) % 60))
-    env.show(test_input, pred_tour)
+    # print('active search ...')
+    # t1 = time()
+    # pred_tour = active_search(cfg, env, test_input)
+    # t2 = time()
+    # print('%dmin %1.2fsec\n' % ((t2 - t1) // 60, (t2 - t1) % 60))
+    # env.show(test_input, pred_tour)
 
     """
     # optimal solution, it takes time
@@ -62,6 +62,5 @@ if __name__ == '__main__':
 
     if cfg.mode == 'test':
         search_tour(cfg, env)
-
     else:
         raise NotImplementedError('test only, specify test pkl file')
