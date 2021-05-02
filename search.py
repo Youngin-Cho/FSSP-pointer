@@ -16,10 +16,10 @@ def sampling(cfg, env, test_input):
     else:
         print('specify pretrained model path')
     act_model = act_model.to(device)
-    pred_tours, _ = act_model(test_inputs, device)
-    l_batch = env.stack_l_fast(test_inputs, pred_tours)
-    index_lmin = torch.argmin(l_batch)
-    best_tour = pred_tours[index_lmin]
+    pred_sequence, _ = act_model(test_inputs, device)
+    C_batch = env.stack_C(test_inputs, pred_sequence)
+    index_Cmin = torch.argmin(C_batch)
+    best_tour = pred_sequence[index_Cmin]
     return best_tour
 
 

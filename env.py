@@ -33,7 +33,7 @@ class PanelBlockShop():
 
         process_time = np.zeros((self.block_num, self.process_num))
         for i in range(self.process_num):
-            r = np.round(stats.lognorm.rvs(shape=shape[i], loc=0, scale=scale[i], size=self.block_num), 1)
+            r = np.round(stats.lognorm.rvs(shape[i], loc=0, scale=scale[i], size=self.block_num), 1)
             process_time[:, i] = r
 
         return torch.FloatTensor(process_time, device=device)
@@ -85,19 +85,13 @@ class PanelBlockShop():
         C_batch = torch.stack(list, dim=0)
         return C_batch
 
-    def show(self, nodes, tour):
-        nodes = nodes.cpu().detach()
-        print('distance:{:.3f}'.format(self.get_tour_distance(nodes, tour)))
-        print(tour)
-        plt.figure()
-        plt.plot(nodes[:, 0], nodes[:, 1], 'yo', markersize=16)
-        np_tour = tour[:].cpu().detach()
-        np_fin_tour = [tour[-1].item(), tour[0].item()]
-        plt.plot(nodes[np_tour, 0], nodes[np_tour, 1], 'k-', linewidth=0.7)
-        plt.plot(nodes[np_fin_tour, 0], nodes[np_fin_tour, 1], 'k-', linewidth=0.7)
-        for i in range(self.city_t):
-            plt.text(nodes[i, 0], nodes[i, 1], str(i), size=10, color='b')
-        plt.show()
+    def show_result(self, blocks, sequence):
+        if isinstance(blocks, torch.Tensor):
+            blocks = blocks.cpu().detach()
+        C = self.get_makespan(blocks, sequence)
+        print('makespan:{:.3f}'.format(C.cpu().numpy()[0]))
+        print(sequence)
+        return C
 
     def shuffle(self, inputs):
         '''
@@ -138,8 +132,15 @@ class PanelBlockShop():
         C(= total makespan)
         return C:(1)
         '''
-        blocks_numpy = blocks.cpu().numpy()
-        sequence_numpy = sequence.cpu().numpy()
+        if isinstance(blocks, torch.Tensor):
+            blocks_numpy = blocks.cpu().numpy()
+        else:
+            blocks_numpy = blocks
+
+        if isinstance(sequence, torch.Tensor):
+            sequence_numpy = sequence.cpu().numpy()
+        else:
+            sequence_numpy = sequence
 
         temp = np.zeros((self.block_num + 1, self.process_num + 1))
         for i in range(1, self.block_num + 1):

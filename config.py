@@ -10,11 +10,11 @@ def argparser():
     # main parts
     parser.add_argument('-m', '--mode', metavar='M', type=str, required=True, choices=['train', 'train_emv', 'test'],
                         help='train or train_emv or test')
-    parser.add_argument('-b', '--batch', metavar='B', type=int, default=512, help='batch size, default: 512')
+    parser.add_argument('-b', '--batch', metavar='B', type=int, default=256, help='batch size, default: 256')
     parser.add_argument('-t', '--block_num', metavar='T', type=int, default=40,
                         help='number of blocks, time sequence, default: 40')
-    parser.add_argument('-s', '--steps', metavar='S', type=int, default=15000,
-                        help='training steps(epochs), default: 15000')
+    parser.add_argument('-s', '--steps', metavar='S', type=int, default=10000,
+                        help='training steps(epochs), default: 10000')
 
     # details
     parser.add_argument('-e', '--embed', metavar='EM', type=int, default=128, help='embedding size')
@@ -35,7 +35,7 @@ def argparser():
                         choices=['greedy', 'sampling'], help='how to choose next city in actor model')
 
     # train, learning rate
-    parser.add_argument('--lr', metavar='LR', type=float, default=1e-3, help='initial learning rate')
+    parser.add_argument('--lr', metavar='LR', type=float, default=1e-4, help='initial learning rate')
     parser.add_argument('--is_lr_decay', action='store_false', help='flag learning rate scheduler default true')
     parser.add_argument('--lr_decay', metavar='LRD', type=float, default=0.96,
                         help='learning rate scheduler, decay by a factor of 0.98 ')
@@ -55,6 +55,7 @@ def argparser():
     parser.add_argument('-ld', '--log_dir', metavar='LD', type=str, default='./Csv/', help='csv logger dir')
     parser.add_argument('-md', '--model_dir', metavar='MD', type=str, default='./Pt/', help='model save dir')
     parser.add_argument('-pd', '--pkl_dir', metavar='PD', type=str, default='./Pkl/', help='pkl save dir')
+    parser.add_argument('-td', '--test_dir', metavar='TD', type=str, default='./Test/', help='test results save dir')
 
     # GPU
     parser.add_argument('-cd', '--cuda_dv', metavar='CD', type=str, default='0',
@@ -71,7 +72,7 @@ class Config():
         self.task = '%s%d' % (self.mode, self.block_num)
         self.pkl_path = self.pkl_dir + '%s.pkl' % (self.task)
         self.n_samples = self.batch * self.steps
-        for x in [self.log_dir, self.model_dir, self.pkl_dir]:
+        for x in [self.log_dir, self.model_dir, self.pkl_dir, self.test_dir]:
             os.makedirs(x, exist_ok=True)
 
 
