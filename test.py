@@ -87,6 +87,6 @@ if __name__ == '__main__':
     # env.show(inputs[0], random_tour)
 
     if cfg.mode == 'test':
-        search_tour(cfg, env, 100)
+        search_tour(cfg, env, 10)
     else:
         raise NotImplementedError('test only, specify test pkl file')
