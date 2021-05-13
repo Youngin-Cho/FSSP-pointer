@@ -1,6 +1,7 @@
 import torch
 import random
 import numpy as np
+import pandas as pd
 
 from time import time
 from datetime import datetime
@@ -9,11 +10,15 @@ from config import Config, load_pkl, pkl_parser
 from search import sampling, active_search
 
 
-def search_tour(cfg, env, iter_num):
+def search_tour(cfg, env, iter_num, test_path=None):
     date = datetime.now().strftime('%m%d_%H_%M')
-    test_path = None
     for i in range(iter_num):
-        blocks = env.get_blocks()
+        if test_path:
+            process_time = pd.read_excel(test_path, sheet_name=i, engine="openpyxl").to_numpy()
+            device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+            blocks = torch.FloatTensor(process_time).to(device)
+        else:
+            blocks = env.get_blocks()
 
         # simplest way
         print('sampling ...')
@@ -69,6 +74,7 @@ def search_tour(cfg, env, iter_num):
 if __name__ == '__main__':
     cfg = load_pkl(pkl_parser().path)
     env = PanelBlockShop(cfg)
+    test_path = "./data/PBS_data_200.xlsx"
 
     # inputs = env.stack_nodes()
     # ~ tours = env.stack_random_tours()
@@ -87,6 +93,6 @@ if __name__ == '__main__':
     # env.show(inputs[0], random_tour)
 
     if cfg.mode == 'test':
-        search_tour(cfg, env, 10)
+        search_tour(cfg, env, 10, test_path)
     else:
         raise NotImplementedError('test only, specify test pkl file')

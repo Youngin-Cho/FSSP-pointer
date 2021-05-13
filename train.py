@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
@@ -123,10 +124,11 @@ def train_model(cfg, env, log_path=None):
             #                 f.write('\nearly stop')
             #         break
             t1 = time()
-    if cfg.issaver:
-        torch.save(act_model.state_dict(),
-                   cfg.model_dir + '%s_%s_step%d_act.pt' % (cfg.task, date, i))  # 'cfg.model_dir = ./Pt/'
-        print('save model...')
+
+        if cfg.issaver and i % 1000 == 0:
+            torch.save(act_model.state_dict(),
+                       cfg.model_dir + '%s_%s_step%d_act.pt' % (cfg.task, date, i))  # 'cfg.model_dir = ./Pt/'
+            print('save model...')
 
 
 if __name__ == '__main__':

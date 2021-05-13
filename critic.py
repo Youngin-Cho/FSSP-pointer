@@ -7,7 +7,7 @@ from config import Config, load_pkl, pkl_parser
 class PtrNet2(nn.Module):
     def __init__(self, cfg):
         super().__init__()
-        self.Embedding = nn.Linear(5, cfg.embed, bias=False)
+        self.Embedding = nn.Linear(6, cfg.embed, bias=False)
         self.Encoder = nn.LSTM(input_size=cfg.embed, hidden_size=cfg.hidden, batch_first=True)
         if torch.cuda.is_available():
             self.Vec = nn.Parameter(torch.cuda.FloatTensor(cfg.embed))
