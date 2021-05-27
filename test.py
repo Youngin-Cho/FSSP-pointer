@@ -8,6 +8,7 @@ from datetime import datetime
 from env import PanelBlockShop
 from config import Config, load_pkl, pkl_parser
 from search import sampling, active_search
+from heuristics import *
 
 
 def search_tour(cfg, env, iter_num, test_path=None):
@@ -34,15 +35,19 @@ def search_tour(cfg, env, iter_num, test_path=None):
         sequence = np.array(sequence)
         C_RANDOM = env.show_result(blocks, sequence)
 
-        # SPT
-        processing_time = blocks.cpu().numpy().sum(axis=1)
-        sequence = processing_time.argsort()
-        C_SPT = env.show_result(blocks, sequence)
+        # Palmer
+        C_Palmer = Palmer(env, blocks)
+        s = 0
 
-        # LPT
-        processing_time = blocks.cpu().numpy().sum(axis=1)
-        sequence = processing_time.argsort()[::-1]
-        C_LPT = env.show_result(blocks, sequence)
+        # # SPT
+        # processing_time = blocks.cpu().numpy().sum(axis=1)
+        # sequence = processing_time.argsort()
+        # C_SPT = env.show_result(blocks, sequence)
+        #
+        # # LPT
+        # processing_time = blocks.cpu().numpy().sum(axis=1)
+        # sequence = processing_time.argsort()[::-1]
+        # C_LPT = env.show_result(blocks, sequence)
 
         if test_path is None:
             test_path = cfg.test_dir + '%s_%s_results.csv' % (date, cfg.task)
@@ -93,6 +98,6 @@ if __name__ == '__main__':
     # env.show(inputs[0], random_tour)
 
     if cfg.mode == 'test':
-        search_tour(cfg, env, 10, test_path)
+        search_tour(cfg, env, 10)
     else:
         raise NotImplementedError('test only, specify test pkl file')
