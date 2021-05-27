@@ -14,12 +14,12 @@ from heuristics import *
 def search_tour(cfg, env, iter_num, test_path=None):
     date = datetime.now().strftime('%m%d_%H_%M')
     for i in range(iter_num):
-        if test_path:
-            process_time = pd.read_excel(test_path, sheet_name=i, engine="openpyxl").to_numpy()
-            device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-            blocks = torch.FloatTensor(process_time).to(device)
-        else:
-            blocks = env.get_blocks()
+        # if test_path:
+        #     process_time = pd.read_excel(test_path, sheet_name=i, engine="openpyxl").to_numpy()
+        #     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        #     blocks = torch.FloatTensor(process_time).to(device)
+        # else:
+        blocks = env.get_blocks()
 
         # simplest way
         print('sampling ...')
@@ -37,25 +37,26 @@ def search_tour(cfg, env, iter_num, test_path=None):
 
         # Palmer
         C_Palmer = Palmer(env, blocks)
-        s = 0
+        C_Campbell = Campbell(env, blocks)
 
-        # # SPT
-        # processing_time = blocks.cpu().numpy().sum(axis=1)
-        # sequence = processing_time.argsort()
-        # C_SPT = env.show_result(blocks, sequence)
-        #
-        # # LPT
-        # processing_time = blocks.cpu().numpy().sum(axis=1)
-        # sequence = processing_time.argsort()[::-1]
-        # C_LPT = env.show_result(blocks, sequence)
+
+        # SPT
+        processing_time = blocks.cpu().numpy().sum(axis=1)
+        sequence = processing_time.argsort()
+        C_SPT = env.show_result(blocks, sequence)
+
+        # LPT
+        processing_time = blocks.cpu().numpy().sum(axis=1)
+        sequence = processing_time.argsort()[::-1]
+        C_LPT = env.show_result(blocks, sequence)
 
         if test_path is None:
             test_path = cfg.test_dir + '%s_%s_results.csv' % (date, cfg.task)
             with open(test_path, 'w') as f:
-                f.write('RL,RANDOM,SPT,LPT\n')
+                f.write('RL,RANDOM,Palmer,Campbell,SPT,LPT\n')
         else:
             with open(test_path, 'a') as f:
-                f.write('%.1f,%.1f,%.1f,%.1f,\n' % (C_RL, C_RANDOM, C_SPT, C_LPT))
+                f.write('%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,\n' % (C_RL, C_RANDOM, C_Palmer, C_Campbell, C_SPT, C_LPT))
 
     # active search, update parameters during test
     # print('active search ...')

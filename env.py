@@ -62,22 +62,22 @@ class PanelBlockShop():
             torch.manual_seed(seed)
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        # lognormal
-        shape = [0.543, 0.525, 0.196, 0.451, 0.581, 0.432]
-        scale = [2.18, 2.18, 0.518, 2.06, 1.79, 2.10]
-
-        process_time = np.zeros((n_samples * self.block_num, self.process_num))
-        for i in range(self.process_num):
-            r = np.round(stats.lognorm.rvs(shape[i], loc=0, scale=scale[i], size=n_samples * self.block_num), 1)
-            process_time[:, i] = r
-        process_time = process_time.reshape((n_samples, self.block_num, self.process_num))
-
-        # #uniform
+        # # lognormal
+        # shape = [0.543, 0.525, 0.196, 0.451, 0.581, 0.432]
+        # scale = [2.18, 2.18, 0.518, 2.06, 1.79, 2.10]
+        #
         # process_time = np.zeros((n_samples * self.block_num, self.process_num))
         # for i in range(self.process_num):
-        #     r = stats.randint.rvs(1, 101, size=n_samples * self.block_num)
+        #     r = np.round(stats.lognorm.rvs(shape[i], loc=0, scale=scale[i], size=n_samples * self.block_num), 1)
         #     process_time[:, i] = r
         # process_time = process_time.reshape((n_samples, self.block_num, self.process_num))
+
+        #uniform
+        process_time = np.zeros((n_samples * self.block_num, self.process_num))
+        for i in range(self.process_num):
+            r = stats.randint.rvs(1, 101, size=n_samples * self.block_num)
+            process_time[:, i] = r
+        process_time = process_time.reshape((n_samples, self.block_num, self.process_num))
 
         return torch.FloatTensor(process_time).to(device)
 
@@ -119,6 +119,27 @@ class PanelBlockShop():
             perm = torch.randperm(self.block_num)
             shuffle_inputs[i, :, :] = inputs[i, perm, :]
         return shuffle_inputs
+
+    def back_tours(self, pred_shuffle_tours, shuffle_inputs, test_inputs, device):
+        '''
+        pred_shuffle_tours:(batch,city_t)
+        shuffle_inputs:(batch,city_t_t,2)
+        test_inputs:(batch,city_t,2)
+        return pred_tours:(batch,city_t)
+        '''
+        pred_tours = []
+        for i in range(self.batch):
+            pred_tour = []
+            for j in range(self.city_t):
+                xy_temp = shuffle_inputs[i, pred_shuffle_tours[i, j]].to(device)
+                for k in range(self.city_t):
+                    if torch.all(torch.eq(xy_temp, test_inputs[i, k])):
+                        pred_tour.append(torch.tensor(k))
+                        if len(pred_tour) == self.city_t:
+                            pred_tours.append(torch.stack(pred_tour, dim=0))
+                        break
+        pred_tours = torch.stack(pred_tours, dim=0)
+        return pred_tours
 
     def get_makespan(self, blocks, sequence):
         '''
