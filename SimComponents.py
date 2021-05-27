@@ -6,10 +6,10 @@ import pandas as pd
 import numpy as np
 
 
-save_path = './result'
-if not os.path.exists(save_path):
-    os.makedirs(save_path)
-
+# save_path = './result'
+# if not os.path.exists(save_path):
+#     os.makedirs(save_path)
+#
 
 class Part(object):
     def __init__(self, name, data):
