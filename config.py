@@ -13,12 +13,12 @@ def argparser():
     parser.add_argument('-b', '--batch', metavar='B', type=int, default=64, help='batch size, default: 128')
     parser.add_argument('-t', '--block_num', metavar='T', type=int, default=40,
                         help='number of blocks, time sequence, default: 40')
-    parser.add_argument('-s', '--steps', metavar='S', type=int, default=20000,
+    parser.add_argument('-s', '--steps', metavar='S', type=int, default=40000,
                         help='training steps(epochs), default: 10000')
 
     # details
-    parser.add_argument('-e', '--embed', metavar='EM', type=int, default=512, help='embedding size')
-    parser.add_argument('-hi', '--hidden', metavar='HI', type=int, default=512, help='hidden size')
+    parser.add_argument('-e', '--embed', metavar='EM', type=int, default=256, help='embedding size')
+    parser.add_argument('-hi', '--hidden', metavar='HI', type=int, default=256, help='hidden size')
     parser.add_argument('-c', '--clip_logits', metavar='C', type=int, default=10,
                         help='improve exploration; clipping logits')
     parser.add_argument('-st', '--softmax_T', metavar='ST', type=float, default=1.0,

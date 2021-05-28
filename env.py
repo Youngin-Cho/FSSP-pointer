@@ -62,22 +62,22 @@ class PanelBlockShop():
             torch.manual_seed(seed)
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        # # lognormal
-        # shape = [0.543, 0.525, 0.196, 0.451, 0.581, 0.432]
-        # scale = [2.18, 2.18, 0.518, 2.06, 1.79, 2.10]
-        #
-        # process_time = np.zeros((n_samples * self.block_num, self.process_num))
-        # for i in range(self.process_num):
-        #     r = np.round(stats.lognorm.rvs(shape[i], loc=0, scale=scale[i], size=n_samples * self.block_num), 1)
-        #     process_time[:, i] = r
-        # process_time = process_time.reshape((n_samples, self.block_num, self.process_num))
+        # lognormal
+        shape = [0.543, 0.525, 0.196, 0.451, 0.581, 0.432]
+        scale = [2.18, 2.18, 0.518, 2.06, 1.79, 2.10]
 
-        #uniform
         process_time = np.zeros((n_samples * self.block_num, self.process_num))
         for i in range(self.process_num):
-            r = stats.randint.rvs(1, 101, size=n_samples * self.block_num)
+            r = np.round(stats.lognorm.rvs(shape[i], loc=0, scale=scale[i], size=n_samples * self.block_num), 1)
             process_time[:, i] = r
         process_time = process_time.reshape((n_samples, self.block_num, self.process_num))
+
+        # #uniform
+        # process_time = np.zeros((n_samples * self.block_num, self.process_num))
+        # for i in range(self.process_num):
+        #     r = stats.randint.rvs(1, 101, size=n_samples * self.block_num)
+        #     process_time[:, i] = r
+        # process_time = process_time.reshape((n_samples, self.block_num, self.process_num))
 
         return torch.FloatTensor(process_time).to(device)
 
