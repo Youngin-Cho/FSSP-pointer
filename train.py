@@ -59,7 +59,7 @@ def train_model(cfg, env, log_path=None):
         inputs = inputs.to(device)
         inputs_network = inputs
         for j in range(6):
-            inputs_network[:,:,j] = (inputs[:,j] - mean[j]) / std[j]
+            inputs_network[:,:,j] = (inputs[:,:,j] - mean[j]) / std[j]
 
         pred_seq, ll = act_model(inputs_network, device)
         real_C = env.stack_C(inputs, pred_seq)
