@@ -19,6 +19,10 @@ class PanelBlockShop():
         self.batch = cfg.batch
         self.block_num = cfg.block_num
         self.process_num = 6
+        self.shape = [0.543, 0.525, 0.196, 0.451, 0.581, 0.432]
+        self.scale = [2.18, 2.18, 0.518, 2.06, 1.79, 2.10]
+        self.mean = [np.round(stats.lognorm.mean(self.shape[i], scale=self.scale[i]), 3) for i in range(self.process_num)]
+        self.std = [np.round(stats.lognorm.std(self.shape[i], scale=self.scale[i]), 3) for i in range(self.process_num)]
 
     def get_blocks(self, seed=None):
         '''
@@ -29,12 +33,10 @@ class PanelBlockShop():
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
         # log-normal 분포
-        shape = [0.543, 0.525, 0.196, 0.451, 0.581, 0.432]
-        scale = [2.18, 2.18, 0.518, 2.06, 1.79, 2.10]
-
         process_time = np.zeros((self.block_num, self.process_num))
         for i in range(self.process_num):
-            r = np.round(stats.lognorm.rvs(shape[i], loc=0, scale=scale[i], size=self.block_num), 1)
+            r = np.round(stats.lognorm.rvs(self.shape[i], loc=0, scale=self.scale[i], size=self.block_num), 1)
+            r = (r - self.mean[i]) / self.std[i]
             process_time[:, i] = r
 
         # # uniform 분포
@@ -63,12 +65,10 @@ class PanelBlockShop():
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
         # lognormal
-        shape = [0.543, 0.525, 0.196, 0.451, 0.581, 0.432]
-        scale = [2.18, 2.18, 0.518, 2.06, 1.79, 2.10]
-
         process_time = np.zeros((n_samples * self.block_num, self.process_num))
         for i in range(self.process_num):
-            r = np.round(stats.lognorm.rvs(shape[i], loc=0, scale=scale[i], size=n_samples * self.block_num), 1)
+            r = np.round(stats.lognorm.rvs(self.shape[i], loc=0, scale=self.scale[i], size=n_samples * self.block_num), 1)
+            r = (r - self.mean[i]) / self.std[i]
             process_time[:, i] = r
         process_time = process_time.reshape((n_samples, self.block_num, self.process_num))
 
@@ -151,6 +151,9 @@ class PanelBlockShop():
             blocks_numpy = blocks.cpu().numpy()
         else:
             blocks_numpy = blocks
+
+        for i in range(self.process_num):
+            blocks_numpy[:,i] = blocks_numpy[:,i] * self.std[i] + self.mean[i]
 
         if isinstance(sequence, torch.Tensor):
             sequence_numpy = sequence.cpu().numpy()
