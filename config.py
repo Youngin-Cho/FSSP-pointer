@@ -17,8 +17,8 @@ def argparser():
                         help='training steps(epochs), default: 10000')
 
     # details
-    parser.add_argument('-e', '--embed', metavar='EM', type=int, default=128, help='embedding size')
-    parser.add_argument('-hi', '--hidden', metavar='HI', type=int, default=128, help='hidden size')
+    parser.add_argument('-e', '--embed', metavar='EM', type=int, default=256, help='embedding size')
+    parser.add_argument('-hi', '--hidden', metavar='HI', type=int, default=256, help='hidden size')
     parser.add_argument('-c', '--clip_logits', metavar='C', type=int, default=10,
                         help='improve exploration; clipping logits')
     parser.add_argument('-st', '--softmax_T', metavar='ST', type=float, default=1.0,

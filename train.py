@@ -57,9 +57,9 @@ def train_model(cfg, env, log_path=None):
     t1 = time()
     for i, inputs in enumerate(dataloader):
         inputs = inputs.to(device)
-        inputs_network = inputs
+        inputs_network = np.zeros_like(inputs)
         for j in range(6):
-            inputs_network[:,:,j] = (inputs[:,j] - mean[j]) / std[j]
+            inputs_network[:,:,j] = (inputs[:,:,j] - mean[j]) / std[j]
 
         pred_seq, ll = act_model(inputs_network, device)
         real_C = env.stack_C(inputs, pred_seq)
