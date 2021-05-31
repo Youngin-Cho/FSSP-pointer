@@ -2,6 +2,8 @@ import torch
 import numpy as np
 import torch.nn as nn
 import torch.optim as optim
+import scipy.stats as stats
+
 from torch.utils.data import DataLoader
 from time import time
 from datetime import datetime
@@ -14,6 +16,11 @@ from data import Generator
 
 # torch.autograd.set_detect_anomaly(True)
 torch.backends.cudnn.benchmark = True
+
+shape = [0.543, 0.525, 0.196, 0.451, 0.581, 0.432]
+scale = [2.18, 2.18, 0.518, 2.06, 1.79, 2.10]
+mean = [np.round(stats.lognorm.mean(shape[i], scale=scale[i]), 3) for i in range(6)]
+std = [np.round(stats.lognorm.std(shape[i], scale=scale[i]), 3) for i in range(6)]
 
 
 def train_model(cfg, env, log_path=None):
@@ -50,10 +57,14 @@ def train_model(cfg, env, log_path=None):
     t1 = time()
     for i, inputs in enumerate(dataloader):
         inputs = inputs.to(device)
-        pred_seq, ll = act_model(inputs, device)
+        inputs_network = inputs
+        for j in range(6):
+            inputs_network[:,:,j] = (inputs[:,j] - mean[j]) / std[j]
+
+        pred_seq, ll = act_model(inputs_network, device)
         real_C = env.stack_C(inputs, pred_seq)
         if cfg.mode == 'train':
-            pred_C = cri_model(inputs, device)
+            pred_C = cri_model(inputs_network, device)
             cri_loss = mse_loss(pred_C, real_C.detach())
             cri_optim.zero_grad()
             cri_loss.backward()

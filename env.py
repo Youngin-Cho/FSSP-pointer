@@ -36,7 +36,6 @@ class PanelBlockShop():
         process_time = np.zeros((self.block_num, self.process_num))
         for i in range(self.process_num):
             r = np.round(stats.lognorm.rvs(self.shape[i], loc=0, scale=self.scale[i], size=self.block_num), 1)
-            r = (r - self.mean[i]) / self.std[i]
             process_time[:, i] = r
 
         # # uniform 분포
@@ -68,7 +67,6 @@ class PanelBlockShop():
         process_time = np.zeros((n_samples * self.block_num, self.process_num))
         for i in range(self.process_num):
             r = np.round(stats.lognorm.rvs(self.shape[i], loc=0, scale=self.scale[i], size=n_samples * self.block_num), 1)
-            r = (r - self.mean[i]) / self.std[i]
             process_time[:, i] = r
         process_time = process_time.reshape((n_samples, self.block_num, self.process_num))
 
@@ -151,9 +149,6 @@ class PanelBlockShop():
             blocks_numpy = blocks.cpu().numpy()
         else:
             blocks_numpy = blocks
-
-        for i in range(self.process_num):
-            blocks_numpy[:,i] = blocks_numpy[:,i] * self.std[i] + self.mean[i]
 
         if isinstance(sequence, torch.Tensor):
             sequence_numpy = sequence.cpu().numpy()
