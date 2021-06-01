@@ -56,8 +56,7 @@ def train_model(cfg, env, log_path=None):
     min_C, cnt = 1e7, 0
     t1 = time()
     for i, inputs in enumerate(dataloader):
-        inputs = inputs.to(device)
-        inputs_network = np.zeros_like(inputs)
+        inputs_network = torch.FloatTensor(np.zeros_like(inputs.cpu().numpy())).to(device)
         for j in range(6):
             inputs_network[:,:,j] = (inputs[:,:,j] - mean[j]) / std[j]
 

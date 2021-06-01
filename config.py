@@ -17,8 +17,8 @@ def argparser():
                         help='training steps(epochs), default: 10000')
 
     # details
-    parser.add_argument('-e', '--embed', metavar='EM', type=int, default=256, help='embedding size')
-    parser.add_argument('-hi', '--hidden', metavar='HI', type=int, default=256, help='hidden size')
+    parser.add_argument('-e', '--embed', metavar='EM', type=int, default=512, help='embedding size')
+    parser.add_argument('-hi', '--hidden', metavar='HI', type=int, default=512, help='hidden size')
     parser.add_argument('-c', '--clip_logits', metavar='C', type=int, default=10,
                         help='improve exploration; clipping logits')
     parser.add_argument('-st', '--softmax_T', metavar='ST', type=float, default=1.0,
@@ -35,7 +35,7 @@ def argparser():
                         choices=['greedy', 'sampling'], help='how to choose next city in actor model')
 
     # train, learning rate
-    parser.add_argument('--lr', metavar='LR', type=float, default=1e-4, help='initial learning rate')
+    parser.add_argument('--lr', metavar='LR', type=float, default=1e-6, help='initial learning rate')
     parser.add_argument('--is_lr_decay', action='store_false', help='flag learning rate scheduler default true')
     parser.add_argument('--lr_decay', metavar='LRD', type=float, default=0.98,
                         help='learning rate scheduler, decay by a factor of 0.98 ')
