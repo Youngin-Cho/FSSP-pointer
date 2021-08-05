@@ -35,11 +35,11 @@ def argparser():
                         choices=['greedy', 'sampling'], help='how to choose next city in actor model')
 
     # train, learning rate
-    parser.add_argument('--lr', metavar='LR', type=float, default=1e-6, help='initial learning rate')
+    parser.add_argument('--lr', metavar='LR', type=float, default=1e-5, help='initial learning rate')
     parser.add_argument('--is_lr_decay', action='store_false', help='flag learning rate scheduler default true')
     parser.add_argument('--lr_decay', metavar='LRD', type=float, default=0.98,
                         help='learning rate scheduler, decay by a factor of 0.98 ')
-    parser.add_argument('--lr_decay_step', metavar='LRDS', type=int, default=5e3,
+    parser.add_argument('--lr_decay_step', metavar='LRDS', type=int, default=3e3,
                         help='learning rate scheduler, decay every 5000 steps')
 
     # inference

@@ -23,27 +23,27 @@ class Categorical(nn.Module):
 
 
 class PtrNet1(nn.Module):
-    def __init__(self, cfg):
+    def __init__(self, params):
         super().__init__()
-        self.Embedding = nn.Linear(6, cfg.embed, bias=False)
-        self.Encoder = nn.LSTM(input_size=cfg.embed, hidden_size=cfg.hidden, batch_first=True)
-        self.Decoder = nn.LSTM(input_size=cfg.embed, hidden_size=cfg.hidden, batch_first=True)
+        self.Embedding = nn.Linear(6, params["n_embedding"], bias=False)
+        self.Encoder = nn.LSTM(input_size=params["n_embedding"], hidden_size=params["n_hidden"], batch_first=True)
+        self.Decoder = nn.LSTM(input_size=params["n_embedding"], hidden_size=params["n_hidden"], batch_first=True)
         if torch.cuda.is_available():
-            self.Vec = nn.Parameter(torch.cuda.FloatTensor(cfg.embed))
-            self.Vec2 = nn.Parameter(torch.cuda.FloatTensor(cfg.embed))
+            self.Vec = nn.Parameter(torch.cuda.FloatTensor(params["n_embedding"]))
+            self.Vec2 = nn.Parameter(torch.cuda.FloatTensor(params["n_embedding"]))
         else:
-            self.Vec = nn.Parameter(torch.FloatTensor(cfg.embed))
-            self.Vec2 = nn.Parameter(torch.FloatTensor(cfg.embed))
-        self.W_q = nn.Linear(cfg.hidden, cfg.hidden, bias=True)
-        self.W_ref = nn.Conv1d(cfg.hidden, cfg.hidden, 1, 1)
-        self.W_q2 = nn.Linear(cfg.hidden, cfg.hidden, bias=True)
-        self.W_ref2 = nn.Conv1d(cfg.hidden, cfg.hidden, 1, 1)
-        self.dec_input = nn.Parameter(torch.FloatTensor(cfg.embed))
-        self._initialize_weights(cfg.init_min, cfg.init_max)
-        self.clip_logits = cfg.clip_logits
-        self.softmax_T = cfg.softmax_T
-        self.n_glimpse = cfg.n_glimpse
-        self.block_selecter = {'greedy': Greedy(), 'sampling': Categorical()}.get(cfg.decode_type, None)
+            self.Vec = nn.Parameter(torch.FloatTensor(params["n_embedding"]))
+            self.Vec2 = nn.Parameter(torch.FloatTensor(params["n_embedding"]))
+        self.W_q = nn.Linear(params["n_hidden"], params["n_hidden"], bias=True)
+        self.W_ref = nn.Conv1d(params["n_hidden"], params["n_hidden"], 1, 1)
+        self.W_q2 = nn.Linear(params["n_hidden"], params["n_hidden"], bias=True)
+        self.W_ref2 = nn.Conv1d(params["n_hidden"], params["n_hidden"], 1, 1)
+        self.dec_input = nn.Parameter(torch.FloatTensor(params["n_embedding"]))
+        self._initialize_weights(params["init_min"], params["init_max"])
+        self.clip_logits = params["clip_logits"]
+        self.softmax_T = params["softmax_T"]
+        self.n_glimpse = params["n_glimpse"]
+        self.block_selecter = {'greedy': Greedy(), 'sampling': Categorical()}.get(params["decode_type"], None)
 
     def _initialize_weights(self, init_min=-0.08, init_max=0.08):
         for param in self.parameters():
