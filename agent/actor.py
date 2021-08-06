@@ -29,11 +29,11 @@ class PtrNet1(nn.Module):
         self.Encoder = nn.LSTM(input_size=params["n_embedding"], hidden_size=params["n_hidden"], batch_first=True)
         self.Decoder = nn.LSTM(input_size=params["n_embedding"], hidden_size=params["n_hidden"], batch_first=True)
         if torch.cuda.is_available():
-            self.Vec = nn.Parameter(torch.cuda.FloatTensor(params["n_embedding"]))
-            self.Vec2 = nn.Parameter(torch.cuda.FloatTensor(params["n_embedding"]))
+            self.Vec = nn.Parameter(torch.cuda.FloatTensor(params["n_hidden"]))
+            self.Vec2 = nn.Parameter(torch.cuda.FloatTensor(params["n_hidden"]))
         else:
-            self.Vec = nn.Parameter(torch.FloatTensor(params["n_embedding"]))
-            self.Vec2 = nn.Parameter(torch.FloatTensor(params["n_embedding"]))
+            self.Vec = nn.Parameter(torch.FloatTensor(params["n_hidden"]))
+            self.Vec2 = nn.Parameter(torch.FloatTensor(params["n_hidden"]))
         self.W_q = nn.Linear(params["n_hidden"], params["n_hidden"], bias=True)
         self.W_ref = nn.Conv1d(params["n_hidden"], params["n_hidden"], 1, 1)
         self.W_q2 = nn.Linear(params["n_hidden"], params["n_hidden"], bias=True)
@@ -104,9 +104,10 @@ class PtrNet1(nn.Module):
         # V: (batch, 1, 128) * u1+u2: (batch, 128, block_num) => u: (batch, 1, block_num) => (batch, block_num)
         u = u - inf * mask
         a = F.softmax(u / self.softmax_T, dim=1)
-        d = torch.bmm(u2, a.unsqueeze(2)).squeeze(2)
+        g = torch.bmm(a.unsqueeze(1), ref).squeeze(1)
+        #d = torch.bmm(u2, a.unsqueeze(2)).squeeze(2)
         # u2: (batch, 128, block_num) * a: (batch, block_num, 1) => d: (batch, 128)
-        return d
+        return g
 
     def pointer(self, query, ref, mask, inf=1e8):
         """	Args:
@@ -131,5 +132,6 @@ class PtrNet1(nn.Module):
             pi: (batch, block_num), predicted tour
             return: (batch)
         """
+        a = pi[:, :, None]
         log_p = torch.gather(input=_log_p, dim=2, index=pi[:, :, None])
         return torch.sum(log_p.squeeze(-1), 1)

@@ -17,7 +17,7 @@ torch.backends.cudnn.benchmark = True
 
 def train_model(env, params, log_path=None):
     date = datetime.now().strftime('%m%d_%H_%M')
-    param_path = log_dir + '%s_%s_param.csv' % (date, "train")
+    param_path = log_dir + '/%s_%s_param.csv' % (date, "train")
     print(f'generate {param_path}')
     with open(param_path, 'w') as f:
         f.write(''.join('%s,%s\n' % item for item in params.items()))
@@ -43,9 +43,6 @@ def train_model(env, params, log_path=None):
     ave_cri_loss = 0.0
     ave_act_loss = 0.0
     ave_makespan = 0.0
-
-    min_makespan = 1e7
-    cnt = 0
 
     t1 = time()
     for s in range(params["step"]):
@@ -82,7 +79,7 @@ def train_model(env, params, log_path=None):
                 s, params["step"], ave_act_loss / (s + 1), ave_cri_loss / (s + 1), ave_makespan / (s + 1),
                 (t2 - t1) // 60, (t2 - t1) % 60))
             if log_path is None:
-                log_path = params["log_dir"] + '%s_train.csv' % date
+                log_path = params["log_dir"] + '/%s_train.csv' % date
                 with open(log_path, 'w') as f:
                     f.write('step,actic loss,critic loss,average distance,time\n')
             else:
@@ -91,30 +88,17 @@ def train_model(env, params, log_path=None):
                         s, ave_act_loss / (s + 1), ave_cri_loss / (s + 1), ave_makespan / (s + 1),
                         (t2 - t1) // 60, (t2 - t1) % 60))
 
-            if ave_makespan / (s + 1) < min_makespan:
-                cnt = 0
-                min_makespan = ave_makespan / (s + 1)
-            else:
-                cnt += 1
-                print(f'cnt: {cnt}/100')
-                if cnt >= 100:
-                    print('early stop, average cost cant decrease anymore')
-                    if log_path is not None:
-                        with open(log_path, 'a') as f:
-                            f.write('\nearly stop')
-                    break
+            t1 = time()
 
         if s % params["save_step"] == 0:
-            torch.save(act_model.state_dict(), params["model_dir"] + '%s_step%d_act.pt' % (date, s))
+            torch.save(act_model.state_dict(), params["model_dir"] + '/%s_step%d_act.pt' % (date, s))
             print('save model...')
-
-            t1 = time()
 
 
 if __name__ == '__main__':
 
     num_of_process = 6
-    num_of_blocks = 50
+    num_of_blocks = 40
 
     log_dir = "./result/log"
     model_dir = "./result/model"
@@ -127,13 +111,13 @@ if __name__ == '__main__':
 
     params = {
         "step":10000,
-        "log_step": 100,
+        "log_step": 10,
         "log_dir": log_dir,
         "save_step": 1000,
         "model_dir": model_dir,
-        "batch_size": 64,
-        "n_embedding": 512,
-        "n_hidden": 512,
+        "batch_size": 128,
+        "n_embedding": 2048,
+        "n_hidden": 2048,
         "init_min": -0.08,
         "init_max": 0.08,
         "clip_logits": 10,
@@ -142,7 +126,7 @@ if __name__ == '__main__':
         "optimizer": "Adam",
         "n_glimpse": 1,
         "n_process": 3,
-        "lr": 1e-5,
+        "lr": 1e-6,
         "is_lr_decay": True,
         "lr_decay": 0.98,
         "lr_decay_step": 3000,

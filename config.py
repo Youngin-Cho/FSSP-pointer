@@ -13,7 +13,7 @@ def argparser():
     parser.add_argument('-b', '--batch', metavar='B', type=int, default=64, help='batch size, default: 128')
     parser.add_argument('-t', '--block_num', metavar='T', type=int, default=40,
                         help='number of blocks, time sequence, default: 40')
-    parser.add_argument('-s', '--steps', metavar='S', type=int, default=100000,
+    parser.add_argument('-s', '--steps', metavar='S', type=int, default=10000,
                         help='training steps(epochs), default: 10000')
 
     # details
