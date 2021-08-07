@@ -110,26 +110,26 @@ if __name__ == '__main__':
         os.makedirs(model_dir)
 
     params = {
-        "step":10000,
+        "step": 100000,
         "log_step": 10,
         "log_dir": log_dir,
         "save_step": 1000,
         "model_dir": model_dir,
         "batch_size": 128,
-        "n_embedding": 2048,
-        "n_hidden": 2048,
+        "n_embedding": 512,
+        "n_hidden": 512,
         "init_min": -0.08,
         "init_max": 0.08,
-        "clip_logits": 10,
+        "clip_logits": 20,
         "softmax_T": 1.0,
         "decode_type": "sampling",
         "optimizer": "Adam",
         "n_glimpse": 1,
         "n_process": 3,
-        "lr": 1e-6,
+        "lr": 1e-5,
         "is_lr_decay": True,
         "lr_decay": 0.98,
-        "lr_decay_step": 3000,
+        "lr_decay_step": 5000
     }
 
     env = PanelBlockShop(num_of_process, num_of_blocks)

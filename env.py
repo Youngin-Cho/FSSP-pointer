@@ -44,7 +44,7 @@ class PanelBlockShop():
         #     r = stats.randint.rvs(1, 101, size=self.block_num)
         #     process_time[:, i] = r
 
-        return torch.FloatTensor(process_time, device=device)
+        return torch.FloatTensor(process_time).to(device)
 
     def stack_blocks(self):
         '''
