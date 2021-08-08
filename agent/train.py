@@ -17,7 +17,7 @@ torch.backends.cudnn.benchmark = True
 
 def train_model(env, params, log_path=None):
     date = datetime.now().strftime('%m%d_%H_%M')
-    param_path = log_dir + '/%s_%s_param.csv' % (date, "train")
+    param_path = params["log_dir"] + '/%s_%s_param.csv' % (date, "train")
     print(f'generate {param_path}')
     with open(param_path, 'w') as f:
         f.write(''.join('%s,%s\n' % item for item in params.items()))
@@ -97,9 +97,6 @@ def train_model(env, params, log_path=None):
 
 if __name__ == '__main__':
 
-    num_of_process = 6
-    num_of_blocks = 40
-
     log_dir = "./result/log"
     model_dir = "./result/model"
 
@@ -110,6 +107,8 @@ if __name__ == '__main__':
         os.makedirs(model_dir)
 
     params = {
+        "num_of_process": 6,
+        "num_of_blocks": 40,
         "step": 100000,
         "log_step": 10,
         "log_dir": log_dir,
@@ -132,5 +131,5 @@ if __name__ == '__main__':
         "lr_decay_step": 5000
     }
 
-    env = PanelBlockShop(num_of_process, num_of_blocks)
+    env = PanelBlockShop(params["num_of_process"], params["num_of_blocks"])
     train_model(env, params)

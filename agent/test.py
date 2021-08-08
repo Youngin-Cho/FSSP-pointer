@@ -11,9 +11,13 @@ from environment.panelblock import *
 from agent.search import *
 
 
-def test_model(env, params, data, test_path=None):
+def test_model(env, params, data, makespan_path=None, time_path=None):
     date = datetime.now().strftime('%m%d_%H_%M')
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    param_path = params["log_dir"] + '/%s_%s_param.csv' % (date, "train")
+    print(f'generate {param_path}')
+    with open(param_path, 'w') as f:
+        f.write(''.join('%s,%s\n' % item for item in params.items()))
 
     for key, process_time in data.items():
 
@@ -41,26 +45,57 @@ def test_model(env, params, data, test_path=None):
         t2 = time()
         t_random = t2 - t1
 
-        if test_path is None:
-            test_path = params["test_dir"] + '/%s_results.csv' % date
-            with open(test_path, 'w') as f:
+        print("SPT ...")
+        t1 = time()
+        sequence_spt, makespan_spt = random_sequence(env, process_time)
+        t2 = time()
+        t_spt = t2 - t1
+
+        print("LPT ...")
+        t1 = time()
+        sequence_lpt, makespan_lpt = random_sequence(env, process_time)
+        t2 = time()
+        t_lpt = t2 - t1
+
+        if makespan_path is None:
+            makespan_path = params["test_dir"] + '/%s_makespan.csv' % date
+            with open(makespan_path, 'w') as f:
                 f.write('RL,Palmer,Campbell,RANDOM,SPT,LPT\n')
         else:
-            with open(test_path, 'a') as f:
-                f.write('%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,\n' % (C_RL, C_RANDOM, C_Palmer, C_Campbell, C_SPT, C_LPT))
+            with open(makespan_path, 'a') as f:
+                f.write('%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,\n' % (makespan_rl, makespan_palmer, makespan_campbell,
+                                                              makespan_random, makespan_spt, makespan_lpt))
+
+        if time_path is None:
+            time_path = params["test_dir"] + '/%s_time.csv' % date
+            with open(time_path, 'w') as f:
+                f.write('RL,Palmer,Campbell,RANDOM,SPT,LPT\n')
+        else:
+            with open(time_path, 'a') as f:
+                f.write('%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,\n' % (t_rl, t_palmer, t_campbell, t_random, t_spt, t_lpt))
+
 
 
 if __name__ == '__main__':
 
-    params_path = "./result/log/"
     model_path = "./result/model/"
     data_path = "../data/"
-    test_path = "./result/test/"
+
+    log_dir = "./result/log/"
+    test_dir = "./result/test/"
+
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    if not os.path.exists(test_dir):
+        os.makedirs(test_dir)
 
     params = {
-        "param_path": params_path,
+        "num_of_process": 6,
+        "num_of_blocks": 40,
         "model_path": model_path,
-        "test_path": test_path,
+        "log_dir": log_dir,
+        "test_dir": test_dir,
         "batch_size": 20,
         "clip_logits": 1,
         "softmax_T": 1.5,
