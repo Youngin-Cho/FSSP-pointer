@@ -132,6 +132,5 @@ class PtrNet1(nn.Module):
             pi: (batch, block_num), predicted tour
             return: (batch)
         """
-        a = pi[:, :, None]
         log_p = torch.gather(input=_log_p, dim=2, index=pi[:, :, None])
         return torch.sum(log_p.squeeze(-1), 1)

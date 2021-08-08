@@ -96,10 +96,20 @@ def Campbell_sequence(env, test_input):
 
 
 def random_sequence(env, test_input):
-
     sequence = np.random.permutation(env.num_of_blocks)
     makespan = env.calculate_makespan(test_input, sequence)
-
     return sequence, makespan
 
 
+def LPT_sequence(env, test_input):
+    processing_time = test_input.cpu().numpy().sum(axis=1)
+    sequence = processing_time.argsort()
+    makespan = env.calculate_makespan(processing_time, sequence)
+    return sequence, makespan
+
+
+def SPT_sequence(env, test_input):
+    processing_time = test_input.cpu().numpy().sum(axis=1)
+    sequence = processing_time.argsort()[::-1]
+    makespan = env.calculate_makespan(processing_time, sequence)
+    return sequence, makespan
