@@ -35,9 +35,9 @@ def read_block_data(filepath):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     process_time = {}
 
-    df_process_time = pd.read_excel(filepath, sheet_name=None)
+    df_process_time = pd.read_excel(filepath, sheet_name=None, engine="openpyxl")
     for key, value in df_process_time.items():
-        process_time[key] = torch.FloatTensor(process_time).to(device)
+        process_time[key] = torch.FloatTensor(value.to_numpy()).to(device)
 
     return process_time
 

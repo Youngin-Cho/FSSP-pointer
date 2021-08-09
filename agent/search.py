@@ -25,6 +25,34 @@ def sampling(env, params, test_input):
     return best_sequence, best_makespan
 
 
+def NEH_sequence(env, test_input):
+    processing_time = test_input.cpu().numpy()
+    processing_time_sum = np.sum(processing_time, axis=1)
+    temp = np.argsort(processing_time_sum)[::-1]
+
+    partial_sequence = []
+    partial_processing_time = []
+    for i in range(env.num_of_blocks):
+        makespan_list = []
+        if len(partial_sequence) == 0:
+            partial_sequence.insert(0, temp[i])
+            partial_processing_time.insert(0, processing_time[temp[i]])
+        else:
+            for pos in range(len(partial_sequence) + 1):
+                partial_processing_time_temp = partial_processing_time[:]
+                partial_processing_time_temp.insert(pos, processing_time[temp[i]])
+                makespan_list.append(env.calculate_makespan(np.array(partial_processing_time_temp),
+                                                            [j for j in range(len(partial_processing_time_temp))]).item())
+            idx = np.argmin(makespan_list)
+            partial_sequence.insert(int(idx), temp[i])
+            partial_processing_time.insert(int(idx), processing_time[temp[i]])
+
+    sequence = partial_sequence
+    makespan = env.calculate_makespan(processing_time, sequence).item()
+
+    return sequence, makespan
+
+
 def Palmer_sequence(env, test_input):
     test_input = test_input.cpu().numpy()
 
@@ -101,15 +129,17 @@ def random_sequence(env, test_input):
     return sequence, makespan
 
 
-def LPT_sequence(env, test_input):
-    processing_time = test_input.cpu().numpy().sum(axis=1)
-    sequence = processing_time.argsort()
+def SPT_sequence(env, test_input):
+    processing_time = test_input.cpu().numpy()
+    processing_time_sum = np.sum(processing_time, axis=1)
+    sequence = processing_time_sum.argsort()[::-1]
     makespan = env.calculate_makespan(processing_time, sequence).item()
     return sequence, makespan
 
 
-def SPT_sequence(env, test_input):
-    processing_time = test_input.cpu().numpy().sum(axis=1)
-    sequence = processing_time.argsort()[::-1]
+def LPT_sequence(env, test_input):
+    processing_time = test_input.cpu().numpy()
+    processing_time_sum = np.sum(processing_time, axis=1)
+    sequence = processing_time_sum.argsort()
     makespan = env.calculate_makespan(processing_time, sequence).item()
     return sequence, makespan

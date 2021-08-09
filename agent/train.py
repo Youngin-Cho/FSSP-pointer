@@ -119,14 +119,18 @@ def train_model(env, params, log_path=None):
 
 if __name__ == '__main__':
 
-    log_dir = "./result/log"
-    model_dir = "./result/model"
+    load_model = False
 
+    log_dir = "./result/log"
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
-    if not os.path.exists(model_dir):
-        os.makedirs(model_dir)
+    if load_model:
+        model_path = "./result/model"
+    else:
+        model_dir = "./result/model"
+        if not os.path.exists(model_dir):
+            os.makedirs(model_dir)
 
     params = {
         "num_of_process": 6,
@@ -151,7 +155,8 @@ if __name__ == '__main__':
         "is_lr_decay": True,
         "lr_decay": 0.98,
         "lr_decay_step": 5000,
-        "use_critic": False
+        "use_critic": False,
+        "load_model": False
     }
 
     env = PanelBlockShop(params["num_of_process"], params["num_of_blocks"])
