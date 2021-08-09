@@ -14,10 +14,21 @@ from agent.search import *
 def test_model(env, params, data, makespan_path=None, time_path=None):
     date = datetime.now().strftime('%m%d_%H_%M')
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
     param_path = params["log_dir"] + '/%s_%s_param.csv' % (date, "train")
     print(f'generate {param_path}')
     with open(param_path, 'w') as f:
         f.write(''.join('%s,%s\n' % item for item in params.items()))
+
+    if makespan_path is None:
+        makespan_path = params["test_dir"] + '/%s_makespan.csv' % date
+        with open(makespan_path, 'w') as f:
+            f.write('RL,Palmer,Campbell,RANDOM,SPT,LPT\n')
+
+    if time_path is None:
+        time_path = params["test_dir"] + '/%s_time.csv' % date
+        with open(time_path, 'w') as f:
+            f.write('RL,Palmer,Campbell,RANDOM,SPT,LPT\n')
 
     for key, process_time in data.items():
 
@@ -57,28 +68,16 @@ def test_model(env, params, data, makespan_path=None, time_path=None):
         t2 = time()
         t_lpt = t2 - t1
 
-        if makespan_path is None:
-            makespan_path = params["test_dir"] + '/%s_makespan.csv' % date
-            with open(makespan_path, 'w') as f:
-                f.write('RL,Palmer,Campbell,RANDOM,SPT,LPT\n')
-        else:
-            with open(makespan_path, 'a') as f:
-                f.write('%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,\n' % (makespan_rl, makespan_palmer, makespan_campbell,
-                                                              makespan_random, makespan_spt, makespan_lpt))
-
-        if time_path is None:
-            time_path = params["test_dir"] + '/%s_time.csv' % date
-            with open(time_path, 'w') as f:
-                f.write('RL,Palmer,Campbell,RANDOM,SPT,LPT\n')
-        else:
-            with open(time_path, 'a') as f:
-                f.write('%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,\n' % (t_rl, t_palmer, t_campbell, t_random, t_spt, t_lpt))
-
+        with open(makespan_path, 'a') as f:
+            f.write('%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,\n' % (makespan_rl, makespan_palmer, makespan_campbell,
+                                                          makespan_random, makespan_spt, makespan_lpt))
+        with open(time_path, 'a') as f:
+            f.write('%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,\n' % (t_rl, t_palmer, t_campbell, t_random, t_spt, t_lpt))
 
 
 if __name__ == '__main__':
 
-    model_path = "./result/model/"
+    model_path = "./result/model/0808_21_54_step99000_act.pt"
     data_path = "../data/"
 
     log_dir = "./result/log/"
@@ -96,13 +95,19 @@ if __name__ == '__main__':
         "model_path": model_path,
         "log_dir": log_dir,
         "test_dir": test_dir,
-        "batch_size": 20,
+        "n_embedding": 512,
+        "n_hidden": 512,
+        "init_min": -0.08,
+        "init_max": 0.08,
+        "batch_size": 30,
         "clip_logits": 1,
-        "softmax_T": 1.5,
-        "decode_type": "greedy",
+        "softmax_T": 5.0,
+        "decode_type": "sampling",
         "n_glimpse": 1,
     }
 
     env = PanelBlockShop(params["num_of_process"], params["num_of_blocks"])
-    data = read_block_data(data_path)
+    data = generate_block_data(num_of_process=params["num_of_process"], num_of_blocks=params["num_of_blocks"],
+                               size=10, distribution="lognormal")
+    #data = read_block_data(data_path)
     test_model(env, params, data)

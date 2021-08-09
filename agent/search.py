@@ -34,7 +34,7 @@ def Palmer_sequence(env, test_input):
             index[i] += (2 * j - env.num_of_process - 1) * processing_time[j-1] / 2
 
     sequence = index.argsort()[::-1]
-    makespan = env.calculate_makespan(test_input, sequence)
+    makespan = env.calculate_makespan(test_input, sequence).item()
     return sequence, makespan
 
 
@@ -86,7 +86,7 @@ def Campbell_sequence(env, test_input):
                     processing_time_johnson.drop(processing_time_johnson.index[min_P2_idx], inplace=True)
                     end -= 1
 
-        makespan_k.append(env.calculate_makespan(test_input, seq))
+        makespan_k.append(env.calculate_makespan(test_input, seq).item())
         sequence_k.append(seq)
 
     best_sequence = sequence_k[np.argmin(makespan_k)]
@@ -97,19 +97,19 @@ def Campbell_sequence(env, test_input):
 
 def random_sequence(env, test_input):
     sequence = np.random.permutation(env.num_of_blocks)
-    makespan = env.calculate_makespan(test_input, sequence)
+    makespan = env.calculate_makespan(test_input, sequence).item()
     return sequence, makespan
 
 
 def LPT_sequence(env, test_input):
     processing_time = test_input.cpu().numpy().sum(axis=1)
     sequence = processing_time.argsort()
-    makespan = env.calculate_makespan(processing_time, sequence)
+    makespan = env.calculate_makespan(processing_time, sequence).item()
     return sequence, makespan
 
 
 def SPT_sequence(env, test_input):
     processing_time = test_input.cpu().numpy().sum(axis=1)
     sequence = processing_time.argsort()[::-1]
-    makespan = env.calculate_makespan(processing_time, sequence)
+    makespan = env.calculate_makespan(processing_time, sequence).item()
     return sequence, makespan
