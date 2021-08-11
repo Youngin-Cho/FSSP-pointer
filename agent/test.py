@@ -89,8 +89,8 @@ def test_model(env, params, data, makespan_path=None, time_path=None):
 
 if __name__ == '__main__':
 
-    model_path = "./result/model/0808_21_54_step99000_act.pt"
-    data_path = "../environment/data/PBS_data_200.xlsx"
+    model_path = "./result/model/sl/0810_15_45_step5000_act.pt"
+    data_path = "../environment/data/PBS_data_40.xlsx"
 
     log_dir = "./result/log/"
     test_dir = "./result/test/"
@@ -103,7 +103,7 @@ if __name__ == '__main__':
 
     params = {
         "num_of_process": 6,
-        "num_of_blocks": 200,
+        "num_of_blocks": 40,
         "model_path": model_path,
         "log_dir": log_dir,
         "test_dir": test_dir,

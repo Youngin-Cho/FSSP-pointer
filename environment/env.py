@@ -2,6 +2,8 @@ import torch
 import numpy as np
 import scipy.stats as stats
 
+from agent.search import NEH_sequence
+
 
 class PanelBlockShop:
     def __init__(self, num_of_process=6, num_of_blocks=50, distribution="lognormal"):
@@ -16,7 +18,7 @@ class PanelBlockShop:
             self.loc = [0 for _ in range(num_of_process)]
             self.scale = [10 for _ in range(num_of_process)]
 
-    def generate_data(self, batch_size=1):
+    def generate_data(self, batch_size=1, use_label=False):
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         process_time = np.zeros((batch_size * self.num_of_blocks, self.num_of_process))
 
@@ -30,7 +32,14 @@ class PanelBlockShop:
             process_time[:, i] = r
         process_time = process_time.reshape((batch_size, self.num_of_blocks, self.num_of_process))
 
-        return torch.FloatTensor(process_time).to(device)
+        if use_label:
+            label = np.zeros((batch_size, self.num_of_blocks))
+            for i, pt in enumerate(process_time):
+                sequence_neh, makespan_neh = NEH_sequence(self, pt)
+                label[i] = sequence_neh
+            return torch.FloatTensor(process_time).to(device), torch.FloatTensor(label).to(device)
+        else:
+            return torch.FloatTensor(process_time).to(device)
 
     def stack_makespan(self, blocks, sequences):
         list = [self.calculate_makespan(blocks[i], sequences[i]) for i in range(blocks.shape[0])]

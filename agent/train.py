@@ -23,6 +23,11 @@ def train_model(env, params, log_path=None):
         f.write(''.join('%s,%s\n' % item for item in params.items()))
 
     act_model = PtrNet1(params)
+    if params["load_model"]:
+        path = params["model_dir"] + "/sl/" + max(os.listdir(params["model_dir"] + "/sl"))
+        act_model.load_state_dict(torch.load(path))
+        act_model.train()
+
     if params["optimizer"] == 'Adam':
         act_optim = optim.Adam(act_model.parameters(), lr=params["lr"])
     elif params["optimizer"] == "RMSProp":
@@ -53,7 +58,7 @@ def train_model(env, params, log_path=None):
     for s in range(params["step"]):
         inputs = env.generate_data(params["batch_size"])
 
-        pred_seq, ll = act_model(inputs, device)
+        pred_seq, ll, _ = act_model(inputs, device)
         real_makespan = env.stack_makespan(inputs, pred_seq)
 
         if params["use_critic"]:
@@ -113,29 +118,26 @@ def train_model(env, params, log_path=None):
             t1 = time()
 
         if s % params["save_step"] == 0:
-            torch.save(act_model.state_dict(), params["model_dir"] + '/%s_step%d_act.pt' % (date, s))
+            torch.save(act_model.state_dict(), params["model_dir"] + '/rl' + '/%s_step%d_act.pt' % (date, s))
             print('save model...')
 
 
 if __name__ == '__main__':
 
-    load_model = False
+    load_model = True
 
     log_dir = "./result/log"
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
-    if load_model:
-        model_path = "./result/model"
-    else:
-        model_dir = "./result/model"
-        if not os.path.exists(model_dir):
-            os.makedirs(model_dir)
+    model_dir = "./result/model"
+    if not os.path.exists(model_dir + "/rl"):
+        os.makedirs(model_dir + "/rl")
 
     params = {
         "num_of_process": 6,
         "num_of_blocks": 40,
-        "step": 100000,
+        "step": 10000,
         "log_step": 10,
         "log_dir": log_dir,
         "save_step": 1000,
@@ -151,12 +153,12 @@ if __name__ == '__main__':
         "optimizer": "Adam",
         "n_glimpse": 1,
         "n_process": 3,
-        "lr": 1e-5,
+        "lr": 1e-6,
         "is_lr_decay": True,
         "lr_decay": 0.98,
         "lr_decay_step": 5000,
         "use_critic": False,
-        "load_model": False
+        "load_model": load_model
     }
 
     env = PanelBlockShop(params["num_of_process"], params["num_of_blocks"])

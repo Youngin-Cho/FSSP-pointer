@@ -49,7 +49,7 @@ class PtrNet1(nn.Module):
         for param in self.parameters():
             nn.init.uniform_(param.data, init_min, init_max)
 
-    def forward(self, x, device):
+    def forward(self, x, device, y=None):
         '''	x: (batch, block_num, process_num)
             enc_h: (batch, block_num, embed)
             dec_input: (batch, 1, embed)
@@ -65,6 +65,7 @@ class PtrNet1(nn.Module):
         ref = enc_h
         pi_list, log_ps = [], []
         dec_input = self.dec_input.unsqueeze(0).repeat(batch, 1).unsqueeze(1).to(device)
+
         for i in range(block_num):
             _, (h, c) = self.Decoder(dec_input, (h, c))
             query = h.squeeze(0)
@@ -72,7 +73,10 @@ class PtrNet1(nn.Module):
                 query = self.glimpse(query, ref, mask)
             logits = self.pointer(query, ref, mask)
             log_p = torch.log_softmax(logits, dim=-1)
-            next_block = self.block_selecter(log_p)
+            if y == None:
+                next_block = self.block_selecter(log_p)
+            else:
+                next_block = y[:, i].long()
             dec_input = torch.gather(input=embed_enc_inputs, dim=1,
                                      index=next_block.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, embed))
 
@@ -81,8 +85,9 @@ class PtrNet1(nn.Module):
             mask += torch.zeros((batch, block_num), device=device).scatter_(dim=1, index=next_block.unsqueeze(1), value=1)
 
         pi = torch.stack(pi_list, dim=1)
+        ps = torch.stack(log_ps, dim=1)
         ll = self.get_log_likelihood(torch.stack(log_ps, 1), pi)
-        return pi, ll
+        return pi, ll, ps
 
     def glimpse(self, query, ref, mask, inf=1e8):
         """	-ref about torch.bmm, torch.matmul and so on
