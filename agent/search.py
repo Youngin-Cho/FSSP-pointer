@@ -17,7 +17,7 @@ def sampling(env, params, test_input):
         print('specify pretrained model path')
     model = model.to(device)
 
-    pred_sequence, _ = model(test_inputs, device)
+    pred_sequence, _, _ = model(test_inputs, device)
     makespan_batch = env.stack_makespan(test_inputs, pred_sequence)
     index_makespan_min = torch.argmin(makespan_batch)
     best_sequence = pred_sequence[index_makespan_min]
@@ -25,13 +25,47 @@ def sampling(env, params, test_input):
     return best_sequence, best_makespan
 
 
+def NEH_sequence(env, test_input):
+    if isinstance(test_input, torch.Tensor):
+        processing_time = test_input.cpu().numpy()
+    else:
+        processing_time = np.array(test_input)
+    processing_time_sum = np.sum(processing_time, axis=1)
+    temp = np.argsort(processing_time_sum)[::-1]
+
+    partial_sequence = []
+    partial_processing_time = []
+    for i in range(env.num_of_blocks):
+        makespan_list = []
+        if len(partial_sequence) == 0:
+            partial_sequence.insert(0, temp[i])
+            partial_processing_time.insert(0, processing_time[temp[i]])
+        else:
+            for pos in range(len(partial_sequence) + 1):
+                partial_processing_time_temp = partial_processing_time[:]
+                partial_processing_time_temp.insert(pos, processing_time[temp[i]])
+                makespan_list.append(env.calculate_makespan(np.array(partial_processing_time_temp),
+                                                            [j for j in range(len(partial_processing_time_temp))]).item())
+            idx = np.argmin(makespan_list)
+            partial_sequence.insert(int(idx), temp[i])
+            partial_processing_time.insert(int(idx), processing_time[temp[i]])
+
+    sequence = partial_sequence
+    makespan = env.calculate_makespan(processing_time, sequence).item()
+
+    return sequence, makespan
+
+
 def Palmer_sequence(env, test_input):
-    test_input = test_input.cpu().numpy()
+    if isinstance(test_input, torch.Tensor):
+        processing_time = test_input.cpu().numpy()
+    else:
+        processing_time = np.array(test_input)
 
     index = np.zeros(env.num_of_blocks)
-    for i, processing_time in enumerate(test_input):
+    for i, processing_time_each_block in enumerate(processing_time):
         for j in range(1, env.num_of_process + 1):
-            index[i] += (2 * j - env.num_of_process - 1) * processing_time[j-1] / 2
+            index[i] += (2 * j - env.num_of_process - 1) * processing_time_each_block[j-1] / 2
 
     sequence = index.argsort()[::-1]
     makespan = env.calculate_makespan(test_input, sequence).item()
@@ -39,7 +73,10 @@ def Palmer_sequence(env, test_input):
 
 
 def Campbell_sequence(env, test_input):
-    processing_time = test_input.cpu().numpy()
+    if isinstance(test_input, torch.Tensor):
+        processing_time = test_input.cpu().numpy()
+    else:
+        processing_time = np.array(test_input)
     makespan_k = []
     sequence_k = []
 
@@ -96,20 +133,35 @@ def Campbell_sequence(env, test_input):
 
 
 def random_sequence(env, test_input):
+    if isinstance(test_input, torch.Tensor):
+        processing_time = test_input.cpu().numpy()
+    else:
+        processing_time = np.array(test_input)
+
     sequence = np.random.permutation(env.num_of_blocks)
-    makespan = env.calculate_makespan(test_input, sequence).item()
-    return sequence, makespan
-
-
-def LPT_sequence(env, test_input):
-    processing_time = test_input.cpu().numpy().sum(axis=1)
-    sequence = processing_time.argsort()
     makespan = env.calculate_makespan(processing_time, sequence).item()
     return sequence, makespan
 
 
 def SPT_sequence(env, test_input):
-    processing_time = test_input.cpu().numpy().sum(axis=1)
-    sequence = processing_time.argsort()[::-1]
+    if isinstance(test_input, torch.Tensor):
+        processing_time = test_input.cpu().numpy()
+    else:
+        processing_time = np.array(test_input)
+
+    processing_time_sum = np.sum(processing_time, axis=1)
+    sequence = processing_time_sum.argsort()[::-1]
+    makespan = env.calculate_makespan(processing_time, sequence).item()
+    return sequence, makespan
+
+
+def LPT_sequence(env, test_input):
+    if isinstance(test_input, torch.Tensor):
+        processing_time = test_input.cpu().numpy()
+    else:
+        processing_time = np.array(test_input)
+
+    processing_time_sum = np.sum(processing_time, axis=1)
+    sequence = processing_time_sum.argsort()
     makespan = env.calculate_makespan(processing_time, sequence).item()
     return sequence, makespan

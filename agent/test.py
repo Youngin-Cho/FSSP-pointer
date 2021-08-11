@@ -15,7 +15,7 @@ def test_model(env, params, data, makespan_path=None, time_path=None):
     date = datetime.now().strftime('%m%d_%H_%M')
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-    param_path = params["log_dir"] + '/%s_%s_param.csv' % (date, "train")
+    param_path = params["log_dir"] + '/%s_%s_param.csv' % (date, "test")
     print(f'generate {param_path}')
     with open(param_path, 'w') as f:
         f.write(''.join('%s,%s\n' % item for item in params.items()))
@@ -23,20 +23,28 @@ def test_model(env, params, data, makespan_path=None, time_path=None):
     if makespan_path is None:
         makespan_path = params["test_dir"] + '/%s_makespan.csv' % date
         with open(makespan_path, 'w') as f:
-            f.write('RL,Palmer,Campbell,RANDOM,SPT,LPT\n')
+            f.write('RL,NEH,Palmer,Campbell,RANDOM,SPT,LPT\n')
 
     if time_path is None:
         time_path = params["test_dir"] + '/%s_time.csv' % date
         with open(time_path, 'w') as f:
-            f.write('RL,Palmer,Campbell,RANDOM,SPT,LPT\n')
+            f.write('RL,NEH,Palmer,Campbell,RANDOM,SPT,LPT\n')
 
+    iteration = 1
     for key, process_time in data.items():
+        print("=" * 50 + "iteration %d" % iteration + "=" * 50)
 
         print('pointer network ...')
         t1 = time()
         sequence_rl, makespan_rl = sampling(env, params, process_time)
         t2 = time()
         t_rl = t2 - t1
+
+        print('NEH heuristics ...')
+        t1 = time()
+        sequence_neh, makespan_neh = NEH_sequence(env, process_time)
+        t2 = time()
+        t_neh = t2 - t1
 
         print('Palmer heuristics ...')
         t1 = time()
@@ -58,27 +66,31 @@ def test_model(env, params, data, makespan_path=None, time_path=None):
 
         print("SPT ...")
         t1 = time()
-        sequence_spt, makespan_spt = random_sequence(env, process_time)
+        sequence_spt, makespan_spt = SPT_sequence(env, process_time)
         t2 = time()
         t_spt = t2 - t1
 
         print("LPT ...")
         t1 = time()
-        sequence_lpt, makespan_lpt = random_sequence(env, process_time)
+        sequence_lpt, makespan_lpt = LPT_sequence(env, process_time)
         t2 = time()
         t_lpt = t2 - t1
 
         with open(makespan_path, 'a') as f:
-            f.write('%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,\n' % (makespan_rl, makespan_palmer, makespan_campbell,
-                                                          makespan_random, makespan_spt, makespan_lpt))
+            f.write('%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,\n' %
+                    (makespan_rl, makespan_neh, makespan_palmer, makespan_campbell,
+                     makespan_random, makespan_spt, makespan_lpt))
         with open(time_path, 'a') as f:
-            f.write('%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,\n' % (t_rl, t_palmer, t_campbell, t_random, t_spt, t_lpt))
+            f.write('%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,\n' %
+                    (t_rl, t_neh, t_palmer, t_campbell, t_random, t_spt, t_lpt))
+
+        iteration += 1
 
 
 if __name__ == '__main__':
 
-    model_path = "./result/model/0808_21_54_step99000_act.pt"
-    data_path = "../data/"
+    model_path = "./result/model/sl/0810_15_45_step5000_act.pt"
+    data_path = "../environment/data/PBS_data_40.xlsx"
 
     log_dir = "./result/log/"
     test_dir = "./result/test/"
@@ -99,7 +111,7 @@ if __name__ == '__main__':
         "n_hidden": 512,
         "init_min": -0.08,
         "init_max": 0.08,
-        "batch_size": 30,
+        "batch_size": 10,
         "clip_logits": 1,
         "softmax_T": 5.0,
         "decode_type": "sampling",
@@ -107,7 +119,7 @@ if __name__ == '__main__':
     }
 
     env = PanelBlockShop(params["num_of_process"], params["num_of_blocks"])
-    data = generate_block_data(num_of_process=params["num_of_process"], num_of_blocks=params["num_of_blocks"],
-                               size=10, distribution="lognormal")
-    #data = read_block_data(data_path)
+    # data = generate_block_data(num_of_process=params["num_of_process"], num_of_blocks=params["num_of_blocks"],
+    #                            size=10, distribution="lognormal")
+    data = read_block_data(data_path)
     test_model(env, params, data)
