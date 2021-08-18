@@ -56,10 +56,12 @@ def train_model(env, params, log_path=None):
 
     t1 = time()
     for s in range(params["step"]):
-        inputs = env.generate_data(params["batch_size"])
+        inputs_temp = env.generate_data(params["batch_size"])
+        inputs = inputs_temp / inputs_temp.amax(dim=(1,2)).unsqueeze(-1).unsqueeze(-1)\
+            .expand(-1, inputs_temp.shape[1], inputs_temp.shape[2])
 
         pred_seq, ll, _ = act_model(inputs, device)
-        real_makespan = env.stack_makespan(inputs, pred_seq)
+        real_makespan = env.stack_makespan(inputs_temp, pred_seq)
 
         if params["use_critic"]:
             pred_makespan = cri_model(inputs, device)
@@ -99,7 +101,7 @@ def train_model(env, params, log_path=None):
                 if log_path is None:
                     log_path = params["log_dir"] + '/%s_train.csv' % date
                     with open(log_path, 'w') as f:
-                        f.write('step,actic loss,critic loss,average distance,time\n')
+                        f.write('step,actic loss,critic loss,average makespan,time\n')
                 else:
                     with open(log_path, 'a') as f:
                         f.write('%d,%1.4f,%1.4f,%dmin%dsec\n' % (s, ave_act_loss / (s + 1), ave_makespan / (s + 1),
@@ -110,7 +112,7 @@ def train_model(env, params, log_path=None):
                 if log_path is None:
                     log_path = params["log_dir"] + '/%s_train.csv' % date
                     with open(log_path, 'w') as f:
-                        f.write('step,actic loss,average distance,time\n')
+                        f.write('step,actic loss,average makespan,time\n')
                 else:
                     with open(log_path, 'a') as f:
                         f.write('%d,%1.4f,%1.4f,%dmin%dsec\n' % (s, ave_act_loss / (s + 1), ave_makespan / (s + 1),
@@ -124,7 +126,7 @@ def train_model(env, params, log_path=None):
 
 if __name__ == '__main__':
 
-    load_model = True
+    load_model = False
 
     log_dir = "./result/log"
     if not os.path.exists(log_dir):
@@ -137,12 +139,12 @@ if __name__ == '__main__':
     params = {
         "num_of_process": 6,
         "num_of_blocks": 40,
-        "step": 10000,
+        "step": 50001,
         "log_step": 10,
         "log_dir": log_dir,
         "save_step": 1000,
         "model_dir": model_dir,
-        "batch_size": 128,
+        "batch_size": 64,
         "n_embedding": 512,
         "n_hidden": 512,
         "init_min": -0.08,
@@ -153,10 +155,10 @@ if __name__ == '__main__':
         "optimizer": "Adam",
         "n_glimpse": 1,
         "n_process": 3,
-        "lr": 1e-6,
+        "lr": 1e-5,
         "is_lr_decay": True,
         "lr_decay": 0.98,
-        "lr_decay_step": 5000,
+        "lr_decay_step": 2000,
         "use_critic": False,
         "load_model": load_model
     }

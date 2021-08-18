@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 import scipy.stats as stats
 
+from agent.search import NEH_sequence
+
 
 def generate_block_data(num_of_process=6, num_of_blocks=50, size=1, distribution="lognormal"):
 
@@ -12,7 +14,7 @@ def generate_block_data(num_of_process=6, num_of_blocks=50, size=1, distribution
         scale = [2.18, 2.18, 0.518, 2.06, 1.79, 2.10]
     elif distribution == "uniform":
         loc = [0 for _ in range(num_of_process)]
-        scale = [10 for _ in range(num_of_process)]
+        scale = [100 for _ in range(num_of_process)]
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     process_time_temp = np.zeros((size * num_of_blocks, num_of_process))
@@ -39,7 +41,7 @@ def write_block_date(filepath, num_of_process=6, num_of_blocks=40, case=30, dist
         scale = [2.18, 2.18, 0.518, 2.06, 1.79, 2.10]
     elif distribution == "uniform":
         loc = [0 for _ in range(num_of_process)]
-        scale = [10 for _ in range(num_of_process)]
+        scale = [100 for _ in range(num_of_process)]
 
     process_time = {}
     for i in range(case):

@@ -69,7 +69,7 @@ class PtrNet1(nn.Module):
         for i in range(block_num):
             _, (h, c) = self.Decoder(dec_input, (h, c))
             query = h.squeeze(0)
-            for i in range(self.n_glimpse):
+            for j in range(self.n_glimpse):
                 query = self.glimpse(query, ref, mask)
             logits = self.pointer(query, ref, mask)
             log_p = torch.log_softmax(logits, dim=-1)

@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import scipy.stats as stats
 
-from agent.search import NEH_sequence
+from agent.search import *
 
 
 class PanelBlockShop:
@@ -16,7 +16,7 @@ class PanelBlockShop:
             self.scale = [2.18, 2.18, 0.518, 2.06, 1.79, 2.10]
         elif distribution == "uniform":
             self.loc = [0 for _ in range(num_of_process)]
-            self.scale = [10 for _ in range(num_of_process)]
+            self.scale = [100 for _ in range(num_of_process)]
 
     def generate_data(self, batch_size=1, use_label=False):
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')

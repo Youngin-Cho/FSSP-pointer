@@ -7,7 +7,6 @@ from time import time
 from datetime import datetime
 
 from agent.actor import PtrNet1
-from agent.critic import PtrNet2
 from environment.env import PanelBlockShop
 
 
@@ -35,14 +34,19 @@ def initialize_model(env, params, log_path=None):
     act_model = act_model.to(device)
     ce_loss = nn.NLLLoss()
     ave_act_loss = 0.0
-    ave_makespan = 0.0
+    ave_makespan_neh = 0.0
+    ave_makespan_learned = 0.0
 
     t1 = time()
     for s in range(params["step"]):
-        inputs, labels = env.generate_data(params["batch_size"], use_label=True)
+        inputs_temp, labels = env.generate_data(params["batch_size"], use_label=True)
+        inputs = inputs_temp / inputs_temp.amax(dim=(1, 2)).unsqueeze(-1).unsqueeze(-1) \
+            .expand(-1, inputs_temp.shape[1], inputs_temp.shape[2])
 
         pred_seq, _, log_p = act_model(inputs, device, labels)
-        real_makespan = env.stack_makespan(inputs, pred_seq)
+        pred_seq_val, _, _ = act_model(inputs, device)
+        makespan_neh = env.stack_makespan(inputs_temp, pred_seq)
+        makespan_learned = env.stack_makespan(inputs_temp, pred_seq_val)
 
         log_p_unrolled = log_p.view(-1, log_p.size(-1))
         labels_unrolled = labels.view(-1).long()
@@ -55,19 +59,21 @@ def initialize_model(env, params, log_path=None):
             act_lr_scheduler.step()
         ave_act_loss += act_loss.item()
 
-        ave_makespan += real_makespan.mean().item()
+        ave_makespan_neh += makespan_neh.mean().item()
+        ave_makespan_learned += makespan_learned.mean().item()
 
         if s % params["log_step"] == 0:
             t2 = time()
-            print('step:%d/%d, actic loss:%1.3f, L:%1.3f, %dmin%dsec' % (
-                s, params["step"], ave_act_loss / (s + 1), ave_makespan / (s + 1), (t2 - t1) // 60, (t2 - t1) % 60))
+            print('step:%d/%d, actic loss:%1.3f, L_neh:%1.3f, L_learned:%1.3f, %dmin%dsec' % (
+                s, params["step"], ave_act_loss / (s + 1), ave_makespan_neh / (s + 1), ave_makespan_learned / (s + 1),
+                (t2 - t1) // 60, (t2 - t1) % 60))
             if log_path is None:
                 log_path = params["log_dir"] + '/%s_initialization.csv' % date
                 with open(log_path, 'w') as f:
-                    f.write('step,actic loss,average distance,time\n')
+                    f.write('step,actic loss,average makespan,time\n')
             else:
                 with open(log_path, 'a') as f:
-                    f.write('%d,%1.4f,%1.4f,%dmin%dsec\n' % (s, ave_act_loss / (s + 1), ave_makespan / (s + 1),
+                    f.write('%d,%1.4f,%1.4f,%dmin%dsec\n' % (s, ave_act_loss / (s + 1), ave_makespan_learned / (s + 1),
                                                              (t2 - t1) // 60, (t2 - t1) % 60))
             t1 = time()
 
@@ -91,26 +97,25 @@ if __name__ == '__main__':
     params = {
         "num_of_process": 6,
         "num_of_blocks": 40,
-        "step": 10000,
+        "step": 1001,
         "log_step": 10,
         "log_dir": log_dir,
-        "save_step": 1000,
+        "save_step": 500,
         "model_dir": model_dir,
-        "batch_size": 32,
-        "n_embedding": 512,
-        "n_hidden": 512,
+        "batch_size": 16,
+        "n_embedding": 1024,
+        "n_hidden": 1024,
         "init_min": -0.08,
         "init_max": 0.08,
-        "clip_logits": 10,
+        "clip_logits": 1,
         "softmax_T": 1.0,
         "decode_type": "sampling",
         "optimizer": "Adam",
         "n_glimpse": 1,
-        "n_process": 3,
-        "lr": 1e-3,
+        "lr": 1e-4,
         "is_lr_decay": True,
         "lr_decay": 0.98,
-        "lr_decay_step": 2000,
+        "lr_decay_step": 1000,
         "use_critic": False,
         "load_model": False
     }
