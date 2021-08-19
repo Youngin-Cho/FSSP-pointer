@@ -87,6 +87,8 @@ class PtrNet1(nn.Module):
         pi = torch.stack(pi_list, dim=1)
         ps = torch.stack(log_ps, dim=1)
         ll = self.get_log_likelihood(torch.stack(log_ps, 1), pi)
+
+        x.detach().cpu()
         return pi, ll, ps
 
     def glimpse(self, query, ref, mask, inf=1e8):

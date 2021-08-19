@@ -16,6 +16,8 @@ torch.backends.cudnn.benchmark = True
 
 
 def train_model(env, params, log_path=None):
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
     date = datetime.now().strftime('%m%d_%H_%M')
     param_path = params["log_dir"] + '/ppo' + '/%s_%s_param.csv' % (date, "train")
     print(f'generate {param_path}')
@@ -23,8 +25,13 @@ def train_model(env, params, log_path=None):
         f.write(''.join('%s,%s\n' % item for item in params.items()))
 
     epoch = 0
-    act_model = PtrNet1(params)
-    cri_model = PtrNet2(params)
+
+    ave_act_loss = 0.0
+    ave_cri_loss = 0.0
+    ave_makespan = 0.0
+
+    act_model = PtrNet1(params).to(device)
+    cri_model = PtrNet2(params).to(device)
     if params["optimizer"] == 'Adam':
         act_optim = optim.Adam(act_model.parameters(), lr=params["lr"])
         cri_optim = optim.Adam(cri_model.parameters(), lr=params["lr"])
@@ -39,6 +46,9 @@ def train_model(env, params, log_path=None):
         act_optim.load_state_dict(checkpoint['optimizer_state_dict_actor'])
         cri_optim.load_state_dict(checkpoint['optimizer_state_dict_critic'])
         epoch = checkpoint['epoch']
+        ave_act_loss = checkpoint['ave_act_loss']
+        ave_cri_loss = checkpoint['ave_cri_loss']
+        ave_makespan = checkpoint['ave_makespan']
         act_model.train()
         cri_model.train()
 
@@ -48,23 +58,14 @@ def train_model(env, params, log_path=None):
         cri_lr_scheduler = optim.lr_scheduler.StepLR(cri_optim, step_size=params["lr_decay_step"],
                                                      gamma=params["lr_decay"])
 
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-
-    act_model = act_model.to(device)
-    ave_act_loss = 0.0
-
-    cri_model = cri_model.to(device)
     mse_loss = nn.MSELoss()
-    ave_cri_loss = 0.0
-
-    ave_makespan = 0.0
 
     t1 = time()
     for s in range(epoch + 1, params["step"]):
         inputs_temp = env.generate_data(params["batch_size"])
-        inputs = inputs_temp / inputs_temp.amax(dim=(1,2)).unsqueeze(-1).unsqueeze(-1)\
-            .expand(-1, inputs_temp.shape[1], inputs_temp.shape[2])
-        # inputs = inputs_temp / 100
+        # inputs = inputs_temp / inputs_temp.amax(dim=(1,2)).unsqueeze(-1).unsqueeze(-1)\
+        #     .expand(-1, inputs_temp.shape[1], inputs_temp.shape[2])
+        inputs = inputs_temp / 100
 
         pred_seq, ll_old, _ = act_model(inputs, device)
 
@@ -118,14 +119,17 @@ def train_model(env, params, log_path=None):
                         'model_state_dict_actor': act_model.state_dict(),
                         'model_state_dict_critic': cri_model.state_dict(),
                         'optimizer_state_dict_actor': act_optim.state_dict(),
-                        'optimizer_state_dict_critic': cri_optim.state_dict()},
+                        'optimizer_state_dict_critic': cri_optim.state_dict(),
+                        'ave_act_loss': ave_act_loss,
+                        'ave_cri_loss': ave_cri_loss,
+                        'ave_makespan': ave_makespan},
                        params["model_dir"] + '/ppo' + '/%s_step%d_act.pt' % (date, s))
             print('save model...')
 
 
 if __name__ == '__main__':
 
-    load_model = False
+    load_model = True
 
     log_dir = "./result/log"
     if not os.path.exists(log_dir + "/ppo"):
@@ -136,7 +140,7 @@ if __name__ == '__main__':
         os.makedirs(model_dir + "/ppo")
 
     params = {
-        "num_of_process": 6,
+        "num_of_process": 20,
         "num_of_blocks": 40,
         "step": 100001,
         "log_step": 10,
@@ -163,5 +167,5 @@ if __name__ == '__main__':
         "load_model": load_model
     }
 
-    env = PanelBlockShop(params["num_of_process"], params["num_of_blocks"], distribution="lognormal")
+    env = PanelBlockShop(params["num_of_process"], params["num_of_blocks"], distribution="uniform")
     train_model(env, params)
