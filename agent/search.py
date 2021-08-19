@@ -13,12 +13,13 @@ def sampling(env, params, test_input):
     test_inputs = test_inputs_temp / 100
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-    model = PtrNet1(params)
+    model = PtrNet1(params).to(device)
     if os.path.exists(params["model_path"]):
-        model.load_state_dict(torch.load(params["model_path"], map_location=device))
+        checkpoint = torch.load(params["model_path"])
+        model.load_state_dict(checkpoint['model_state_dict_actor'])
+        model.eval()
     else:
         print('specify pretrained model path')
-    model = model.to(device)
 
     pred_sequence, _, _ = model(test_inputs, device)
     makespan_batch = env.stack_makespan(test_inputs_temp, pred_sequence)
