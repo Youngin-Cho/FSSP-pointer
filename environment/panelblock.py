@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats as stats
 
-from agent.search import NEH_sequence
+from benchmark.heuristics import NEH_sequence
 
 
 def generate_block_data(num_of_process=6, num_of_blocks=50, size=1, distribution="lognormal"):

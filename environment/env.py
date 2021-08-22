@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import scipy.stats as stats
 
-from agent.search import *
+from benchmark.heuristics import *
 
 
 class PanelBlockShop:

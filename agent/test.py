@@ -90,20 +90,22 @@ def test_model(env, params, data, makespan_path=None, time_path=None):
 
 if __name__ == '__main__':
 
-    model_path = "./result/model/ppo/0821_21_36_step66000_act.pt"
+    model = "ppo"
+
+    model_path = "./result/model/ppo/0821_21_36_step80000_act.pt"
     data_path = "../environment/data/PBS_data_40.xlsx"
 
-    log_dir = "./result/log/"
-    test_dir = "./result/test/"
+    log_dir = "./result/log"
+    test_dir = "./result/test"
 
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
+    if not os.path.exists(log_dir+ "/" + model):
+        os.makedirs(log_dir + "/" + model)
 
-    if not os.path.exists(test_dir):
-        os.makedirs(test_dir)
+    if not os.path.exists(test_dir+ "/" + model):
+        os.makedirs(test_dir + "/" + model)
 
     params = {
-        "model": "ppo",
+        "model": model,
         "num_of_process": 6,
         "num_of_blocks": 40,
         "model_path": model_path,
@@ -116,13 +118,13 @@ if __name__ == '__main__':
         "batch_size": 1000,
         "use_logit_clipping": False,
         "C": 10,
-        "T": 1.5,
+        "T": 2.0,
         "decode_type": "sampling",
         "n_glimpse": 1,
     }
 
     env = PanelBlockShop(params["num_of_process"], params["num_of_blocks"], distribution="lognormal")
-    data = generate_block_data(num_of_process=params["num_of_process"], num_of_blocks=params["num_of_blocks"],
-                               size=50, distribution="lognormal")
-    # data = read_block_data(data_path)
+    # data = generate_block_data(num_of_process=params["num_of_process"], num_of_blocks=params["num_of_blocks"],
+    #                            size=30, distribution="lognormal")
+    data = read_block_data(data_path)
     test_model(env, params, data)

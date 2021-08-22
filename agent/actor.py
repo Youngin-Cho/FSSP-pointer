@@ -2,9 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from config import Config, load_pkl, pkl_parser
-from env import PanelBlockShop
-
 
 class Greedy(nn.Module):
     def __init__(self):
