@@ -40,7 +40,8 @@ def train_model(env, params, log_path=None):
         cri_optim = optim.RMSprop(cri_model.parameters(), lr=params["lr"])
 
     if params["load_model"]:
-        checkpoint = torch.load(params["model_dir"] + "/ppo/" + max(os.listdir(params["model_dir"] + "/ppo")))
+        #checkpoint = torch.load(params["model_dir"] + "/ppo/" + max(os.listdir(params["model_dir"] + "/ppo")))
+        checkpoint = torch.load(params["model_dir"] + "/ppo/" + "0821_17_06_step17500_act.pt")
         act_model.load_state_dict(checkpoint['model_state_dict_actor'])
         cri_model.load_state_dict(checkpoint['model_state_dict_critic'])
         act_optim.load_state_dict(checkpoint['optimizer_state_dict_actor'])
@@ -63,9 +64,9 @@ def train_model(env, params, log_path=None):
     t1 = time()
     for s in range(epoch + 1, params["step"]):
         inputs_temp = env.generate_data(params["batch_size"])
-        # inputs = inputs_temp / inputs_temp.amax(dim=(1,2)).unsqueeze(-1).unsqueeze(-1)\
-        #     .expand(-1, inputs_temp.shape[1], inputs_temp.shape[2])
-        inputs = inputs_temp / 100
+        inputs = inputs_temp / inputs_temp.amax(dim=(1,2)).unsqueeze(-1).unsqueeze(-1)\
+            .expand(-1, inputs_temp.shape[1], inputs_temp.shape[2])
+        # inputs = inputs_temp / 100
 
         pred_seq, ll_old, _ = act_model(inputs, device)
 
@@ -88,7 +89,7 @@ def train_model(env, params, log_path=None):
 
             surr1 = ratio * adv
             surr2 = torch.clamp(ratio, 1 - params["epsilon"], 1 + params["epsilon"]) * adv
-            act_loss = torch.min(surr1, surr2).mean()
+            act_loss = torch.max(surr1, surr2).mean()
             act_optim.zero_grad()
             act_loss.backward()
             act_optim.step()
@@ -114,7 +115,6 @@ def train_model(env, params, log_path=None):
             t1 = time()
 
         if s % params["save_step"] == 0:
-            torch.save(act_model.state_dict(), params["model_dir"] + '/ppo' + '/%s_step%d_act.pt' % (date, s))
             torch.save({'epoch': s,
                         'model_state_dict_actor': act_model.state_dict(),
                         'model_state_dict_critic': cri_model.state_dict(),
@@ -140,7 +140,7 @@ if __name__ == '__main__':
         os.makedirs(model_dir + "/ppo")
 
     params = {
-        "num_of_process": 20,
+        "num_of_process": 6,
         "num_of_blocks": 40,
         "step": 100001,
         "log_step": 10,
@@ -152,11 +152,12 @@ if __name__ == '__main__':
         "n_hidden": 512,
         "init_min": -0.08,
         "init_max": 0.08,
-        "clip_logits": 10,
-        "softmax_T": 1.0,
+        "use_logit_clipping": True,
+        "C": 10,
+        "T": 1.0,
         "decode_type": "sampling",
-        "iteration": 3,
-        "epsilon": 0.1,
+        "iteration": 2,
+        "epsilon": 0.2,
         "optimizer": "Adam",
         "n_glimpse": 1,
         "n_process": 3,
@@ -167,5 +168,5 @@ if __name__ == '__main__':
         "load_model": load_model
     }
 
-    env = PanelBlockShop(params["num_of_process"], params["num_of_blocks"], distribution="uniform")
+    env = PanelBlockShop(params["num_of_process"], params["num_of_blocks"], distribution="lognormal")
     train_model(env, params)
