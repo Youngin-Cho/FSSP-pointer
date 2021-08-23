@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from config import Config, load_pkl, pkl_parser
 
 
 class PtrNet2(nn.Module):
@@ -63,22 +62,3 @@ class PtrNet2(nn.Module):
         # d = torch.bmm(u2, a.unsqueeze(2)).squeeze(2)
         # u2: (batch, 128, block_num) * a: (batch, block_num, 1) => d: (batch, 128)
         return g
-
-
-if __name__ == '__main__':
-    cfg = load_pkl(pkl_parser().path)
-    model = PtrNet2(cfg)
-    inputs = torch.randn(3, 20, 2)
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    model = model.to(device)
-    pred_l = model(inputs, device)
-    print('pred_length:', pred_l.size(), pred_l)
-
-    cnt = 0
-    for i, k in model.state_dict().items():
-        print(i, k.size(), torch.numel(k))
-        cnt += torch.numel(k)
-    print('total parameters:', cnt)
-
-# pred_l.mean().backward()
-# print(model.W_q.weight.grad)

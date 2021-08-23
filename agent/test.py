@@ -92,7 +92,7 @@ if __name__ == '__main__':
 
     model = "ppo"
 
-    model_path = "./result/model/ppo/0821_21_36_step80000_act.pt"
+    model_path = "./result/model/ppo/0823_09_19_step30000_act.pt"
     data_path = "../environment/data/PBS_data_40.xlsx"
 
     log_dir = "./result/log"
@@ -106,8 +106,8 @@ if __name__ == '__main__':
 
     params = {
         "model": model,
-        "num_of_process": 6,
-        "num_of_blocks": 40,
+        "num_of_process": 15,
+        "num_of_blocks": 50,
         "model_path": model_path,
         "log_dir": log_dir,
         "test_dir": test_dir,
@@ -123,8 +123,8 @@ if __name__ == '__main__':
         "n_glimpse": 1,
     }
 
-    env = PanelBlockShop(params["num_of_process"], params["num_of_blocks"], distribution="lognormal")
-    # data = generate_block_data(num_of_process=params["num_of_process"], num_of_blocks=params["num_of_blocks"],
-    #                            size=30, distribution="lognormal")
-    data = read_block_data(data_path)
+    env = PanelBlockShop(params["num_of_process"], params["num_of_blocks"], distribution="uniform")
+    data = generate_block_data(num_of_process=params["num_of_process"], num_of_blocks=params["num_of_blocks"],
+                               size=30, distribution="uniform")
+    # data = read_block_data(data_path)
     test_model(env, params, data)

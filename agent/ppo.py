@@ -41,7 +41,7 @@ def train_model(env, params, log_path=None):
 
     if params["load_model"]:
         #checkpoint = torch.load(params["model_dir"] + "/ppo/" + max(os.listdir(params["model_dir"] + "/ppo")))
-        checkpoint = torch.load(params["model_dir"] + "/ppo/" + "0821_17_06_step17500_act.pt")
+        checkpoint = torch.load(params["model_dir"] + "/ppo/" + "0823_16_27_step41500_act.pt")
         act_model.load_state_dict(checkpoint['model_state_dict_actor'])
         cri_model.load_state_dict(checkpoint['model_state_dict_critic'])
         act_optim.load_state_dict(checkpoint['optimizer_state_dict_actor'])
@@ -64,9 +64,11 @@ def train_model(env, params, log_path=None):
     t1 = time()
     for s in range(epoch + 1, params["step"]):
         inputs_temp = env.generate_data(params["batch_size"])
-        inputs = inputs_temp / inputs_temp.amax(dim=(1,2)).unsqueeze(-1).unsqueeze(-1)\
-            .expand(-1, inputs_temp.shape[1], inputs_temp.shape[2])
-        # inputs = inputs_temp / 100
+        if env.distribution == "lognormal":
+            inputs = inputs_temp / inputs_temp.amax(dim=(1,2)).unsqueeze(-1).unsqueeze(-1)\
+                .expand(-1, inputs_temp.shape[1], inputs_temp.shape[2])
+        elif env.distribution == "uniform":
+            inputs = inputs_temp / 100
 
         pred_seq, ll_old, _ = act_model(inputs, device)
 
@@ -140,7 +142,7 @@ if __name__ == '__main__':
         os.makedirs(model_dir + "/ppo")
 
     params = {
-        "num_of_process": 6,
+        "num_of_process": 15,
         "num_of_blocks": 40,
         "step": 100001,
         "log_step": 10,
@@ -168,5 +170,5 @@ if __name__ == '__main__':
         "load_model": load_model
     }
 
-    env = PanelBlockShop(params["num_of_process"], params["num_of_blocks"], distribution="lognormal")
+    env = PanelBlockShop(params["num_of_process"], params["num_of_blocks"], distribution="uniform")
     train_model(env, params)

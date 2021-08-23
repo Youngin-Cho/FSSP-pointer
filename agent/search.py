@@ -6,9 +6,11 @@ from actor import PtrNet1
 
 def sampling(env, params, test_input):
     test_inputs_temp = test_input.repeat(params["batch_size"], 1, 1)
-    test_inputs = test_inputs_temp / test_inputs_temp.amax(dim=(1, 2)).unsqueeze(-1).unsqueeze(-1).\
-        expand(-1, test_inputs_temp.shape[1], test_inputs_temp.shape[2])
-    # test_inputs = test_inputs_temp / 100
+    if env.distribution == "lognormal":
+        test_inputs = test_inputs_temp / test_inputs_temp.amax(dim=(1, 2)).unsqueeze(-1).unsqueeze(-1). \
+            expand(-1, test_inputs_temp.shape[1], test_inputs_temp.shape[2])
+    elif env.distribution == "uniform":
+        test_inputs = test_inputs_temp / 100
     device = torch.device('cpu')
 
     model = PtrNet1(params).to(device)
