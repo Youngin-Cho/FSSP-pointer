@@ -15,7 +15,7 @@ def sampling(env, params, test_input):
 
     model = PtrNet1(params).to(device)
     if os.path.exists(params["model_path"]):
-        checkpoint = torch.load(params["model_path"])
+        checkpoint = torch.load(params["model_path"], map_location=device)
         model.load_state_dict(checkpoint['model_state_dict_actor'])
         model.eval()
     else:
