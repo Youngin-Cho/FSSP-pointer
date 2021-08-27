@@ -24,7 +24,7 @@ def generate_block_data(num_of_process=6, num_of_blocks=50, size=1, distribution
         if distribution == "lognormal":
             r = np.round(stats.lognorm.rvs(shape[i], loc=0, scale=scale[i], size=size * num_of_blocks), 1)
         elif distribution == "uniform":
-            r = np.round(stats.uniform.rvs(loc=loc[i], scale=scale[i],size=size * num_of_blocks), 1)
+            r = np.ceil(stats.uniform.rvs(loc=loc[i], scale=scale[i],size=size * num_of_blocks)).astype(np.int64)
         process_time_temp[:, i] = r
     process_time_temp = process_time_temp.reshape((size, num_of_blocks, num_of_process))
 

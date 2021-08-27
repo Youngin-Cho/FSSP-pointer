@@ -92,7 +92,7 @@ if __name__ == '__main__':
 
     model = "ppo"
 
-    model_path = "./result/model/ppo/0823_09_19_step30000_act.pt"
+    model_path = "./result/model/ppo/0826_17_43_step150000_act.pt"
     data_path = "../environment/data/PBS_data_40.xlsx"
 
     log_dir = "./result/log"
@@ -115,10 +115,10 @@ if __name__ == '__main__':
         "n_hidden": 512,
         "init_min": -0.08,
         "init_max": 0.08,
-        "batch_size": 1000,
+        "batch_size": 100,
         "use_logit_clipping": False,
         "C": 10,
-        "T": 2.0,
+        "T": 1.5,
         "decode_type": "sampling",
         "n_glimpse": 1,
     }

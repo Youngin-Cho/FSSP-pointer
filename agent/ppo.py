@@ -40,8 +40,7 @@ def train_model(env, params, log_path=None):
         cri_optim = optim.RMSprop(cri_model.parameters(), lr=params["lr"])
 
     if params["load_model"]:
-        #checkpoint = torch.load(params["model_dir"] + "/ppo/" + max(os.listdir(params["model_dir"] + "/ppo")))
-        checkpoint = torch.load(params["model_dir"] + "/ppo/" + "0823_16_27_step41500_act.pt")
+        checkpoint = torch.load(params["model_dir"] + "/ppo/" + "0821_21_36_step100000_act.pt")
         act_model.load_state_dict(checkpoint['model_state_dict_actor'])
         cri_model.load_state_dict(checkpoint['model_state_dict_critic'])
         act_optim.load_state_dict(checkpoint['optimizer_state_dict_actor'])
@@ -142,12 +141,12 @@ if __name__ == '__main__':
         os.makedirs(model_dir + "/ppo")
 
     params = {
-        "num_of_process": 15,
+        "num_of_process": 6,
         "num_of_blocks": 40,
-        "step": 100001,
+        "step": 150001,
         "log_step": 10,
         "log_dir": log_dir,
-        "save_step": 500,
+        "save_step": 1000,
         "model_dir": model_dir,
         "batch_size": 128,
         "n_embedding": 1024,
@@ -170,5 +169,5 @@ if __name__ == '__main__':
         "load_model": load_model
     }
 
-    env = PanelBlockShop(params["num_of_process"], params["num_of_blocks"], distribution="uniform")
+    env = PanelBlockShop(params["num_of_process"], params["num_of_blocks"], distribution="lognormal")
     train_model(env, params)
