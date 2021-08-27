@@ -14,7 +14,8 @@ from benchmark.heuristics import *
 
 def test_model(env, params, data, makespan_path=None, time_path=None):
     date = datetime.now().strftime('%m%d_%H_%M')
-    device = torch.device('cpu')
+    # device = torch.device('cpu')
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     param_path = params["log_dir"] + '/' + params["model"] + '/%s_%s_param.csv' % (date, "test")
     print(f'generate {param_path}')
@@ -92,8 +93,8 @@ if __name__ == '__main__':
 
     model = "ppo"
 
-    model_path = "./result/model/ppo/0826_17_43_step150000_act.pt"
-    data_path = "../environment/data/PBS_data_40.xlsx"
+    model_path = "./result/model/ppo/0825_14_43_step150000_act.pt"
+    data_path = "../environment/data/PBS_5_50.xlsx"
 
     log_dir = "./result/log"
     test_dir = "./result/test"
@@ -106,7 +107,7 @@ if __name__ == '__main__':
 
     params = {
         "model": model,
-        "num_of_process": 15,
+        "num_of_process": 5,
         "num_of_blocks": 50,
         "model_path": model_path,
         "log_dir": log_dir,
@@ -115,7 +116,7 @@ if __name__ == '__main__':
         "n_hidden": 512,
         "init_min": -0.08,
         "init_max": 0.08,
-        "batch_size": 100,
+        "batch_size": 100000,
         "use_logit_clipping": False,
         "C": 10,
         "T": 1.5,
@@ -124,7 +125,7 @@ if __name__ == '__main__':
     }
 
     env = PanelBlockShop(params["num_of_process"], params["num_of_blocks"], distribution="uniform")
-    data = generate_block_data(num_of_process=params["num_of_process"], num_of_blocks=params["num_of_blocks"],
-                               size=30, distribution="uniform")
-    # data = read_block_data(data_path)
+    # data = generate_block_data(num_of_process=params["num_of_process"], num_of_blocks=params["num_of_blocks"],
+    #                            size=30, distribution="uniform")
+    data = read_block_data(data_path)
     test_model(env, params, data)

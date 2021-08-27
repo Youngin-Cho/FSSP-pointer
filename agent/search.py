@@ -11,7 +11,8 @@ def sampling(env, params, test_input):
             expand(-1, test_inputs_temp.shape[1], test_inputs_temp.shape[2])
     elif env.distribution == "uniform":
         test_inputs = test_inputs_temp / 100
-    device = torch.device('cpu')
+    # device = torch.device('cpu')
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     model = PtrNet1(params).to(device)
     if os.path.exists(params["model_path"]):
