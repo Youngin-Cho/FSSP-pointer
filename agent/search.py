@@ -4,8 +4,8 @@ import torch
 from actor import PtrNet1
 
 
-def sampling(env, params, test_input):
-    test_inputs_temp = test_input.repeat(params["batch_size"], 1, 1)
+def sampling(env, params, batch_size, test_input):
+    test_inputs_temp = test_input.repeat(batch_size, 1, 1)
     if env.distribution == "lognormal":
         test_inputs = test_inputs_temp / test_inputs_temp.amax(dim=(1, 2)).unsqueeze(-1).unsqueeze(-1). \
             expand(-1, test_inputs_temp.shape[1], test_inputs_temp.shape[2])
