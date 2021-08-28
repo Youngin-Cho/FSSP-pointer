@@ -101,9 +101,9 @@ def test_model(env, params, data, method_list, makespan_path=None, time_path=Non
 if __name__ == '__main__':
 
     model = "ppo"
-    num_of_processes = [5, 10, 15, 20]
-    num_of_blocks = [25, 50, 100, 250]
-    batch_size = [10, 100, 1000]
+    num_of_processes = reversed([5, 10, 15, 20])
+    num_of_blocks = reversed([25, 50, 100, 200])
+    batch_size = reversed([10, 100, 1000])
     method = ['Ptr-%d' % i for i in batch_size] + ['NEH', 'Palmer', 'Campbell', 'LPT', 'SPT', 'Random']
 
     test_dir = "./result/test"

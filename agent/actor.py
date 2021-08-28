@@ -51,6 +51,8 @@ class PtrNet1(nn.Module):
         x = x.to(device)
         batch, block_num, _ = x.size()
         embed_enc_inputs = self.Embedding(x)
+        x.detach().cpu()
+
         embed = embed_enc_inputs.size(2)
         mask = torch.zeros((batch, block_num), device=device)
         enc_h, (h, c) = self.Encoder(embed_enc_inputs, None)
@@ -65,12 +67,16 @@ class PtrNet1(nn.Module):
                 query = self.glimpse(query, ref, mask)
             logits = self.pointer(query, ref, mask)
             log_p = torch.log_softmax(logits / self.T, dim=-1)
+            query.detach().cpu()
+            logits.detach().cpu()
+
             if y == None:
                 next_block = self.block_selecter(log_p)
             else:
                 next_block = y[:, i].long()
             dec_input = torch.gather(input=embed_enc_inputs, dim=1,
                                      index=next_block.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, embed))
+            log_p.detach().cpu()
 
             pi_list.append(next_block)
             log_ps.append(log_p)
@@ -80,7 +86,6 @@ class PtrNet1(nn.Module):
         ps = torch.stack(log_ps, dim=1)
         ll = self.get_log_likelihood(torch.stack(log_ps, 1), pi)
 
-        x.detach().cpu()
         return pi, ll, ps
 
     def glimpse(self, query, ref, mask, inf=1e8):
@@ -89,6 +94,10 @@ class PtrNet1(nn.Module):
         V = self.Vec.unsqueeze(0).unsqueeze(0).repeat(ref.size(0), 1, 1)
         u = torch.bmm(V, torch.tanh(u1 + u2)).squeeze(1)
         # V: (batch, 1, 128) * u1+u2: (batch, 128, block_num) => u: (batch, 1, block_num) => (batch, block_num)
+        u1.detach().cpu()
+        u2.detach().cpu()
+        V.detach().cpu()
+
         u = u - inf * mask
         a = F.softmax(u, dim=1)
         g = torch.bmm(a.unsqueeze(1), ref).squeeze(1)
@@ -100,6 +109,10 @@ class PtrNet1(nn.Module):
         u2 = self.W_ref2(ref.permute(0, 2, 1))  # u2: (batch, 128, block_num)
         V = self.Vec2.unsqueeze(0).unsqueeze(0).repeat(ref.size(0), 1, 1)
         u = torch.bmm(V, torch.tanh(u1 + u2)).squeeze(1)
+        u1.detach().cpu()
+        u2.detach().cpu()
+        V.detach().cpu()
+
         if self.use_logit_clipping:
             u = self.C * torch.tanh(u)
         # V: (batch, 1, 128) * u1+u2: (batch, 128, block_num) => u: (batch, 1, block_num) => (batch, block_num)
