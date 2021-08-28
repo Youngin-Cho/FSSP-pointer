@@ -311,10 +311,8 @@ class PBS(Annealer):
 
 
 if __name__ == '__main__':
-    result = []
     random.seed(233423)
     np.random.seed(seed=233423)
-    pbs = []
     schedule = {'tmax': 1000, 'tmin': 0.0026, 'steps': 10000, 'updates': 100}
 
     # init_state = list(range(len(data_all)))
@@ -351,6 +349,7 @@ if __name__ == '__main__':
     time_list = []
     for j in filename:
         pbs = []
+        result = []
         start = time.time()
         for i in range(30):
             data = pd.read_excel(j, sheet_name=i, engine="openpyxl")
