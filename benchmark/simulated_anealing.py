@@ -328,22 +328,22 @@ if __name__ == '__main__':
     #
     # plt.plot(pbs.time_list, pbs.energy_list)
     # plt.savefig('./result')
-    filename = ["../environment/data/PBS_5_25.xlsx",
-                "../environment/data/PBS_5_50.xlsx",
-                "../environment/data/PBS_5_100.xlsx",
-                "../environment/data/PBS_5_200.xlsx",
-                "../environment/data/PBS_10_25.xlsx",
-                "../environment/data/PBS_10_50.xlsx",
-                "../environment/data/PBS_10_100.xlsx",
-                "../environment/data/PBS_10_200.xlsx",
-                "../environment/data/PBS_15_25.xlsx",
-                "../environment/data/PBS_15_50.xlsx",
-                "../environment/data/PBS_15_100.xlsx",
-                "../environment/data/PBS_15_200.xlsx",
-                "../environment/data/PBS_20_25.xlsx",
-                "../environment/data/PBS_20_50.xlsx",
-                "../environment/data/PBS_20_100.xlsx",
-                "../environment/data/PBS_20_200.xlsx"]
+    filename =["../environment/data/PBS_5_75.xlsx",
+            "../environment/data/PBS_5_125.xlsx"]
+            # "../environment/data/PBS_6_75.xlsx",
+            # "../environment/data/PBS_6_100.xlsx",
+            # "../environment/data/PBS_6_125.xlsx",
+            # "../environment/data/PBS_10_50.xlsx",
+            # "../environment/data/PBS_10_100.xlsx",
+            # "../environment/data/PBS_10_200.xlsx",
+            # "../environment/data/PBS_15_25.xlsx",
+            # "../environment/data/PBS_15_50.xlsx",
+            # "../environment/data/PBS_15_100.xlsx",
+            # "../environment/data/PBS_15_200.xlsx",
+            # "../environment/data/PBS_20_25.xlsx",
+            # "../environment/data/PBS_20_50.xlsx",
+            # "../environment/data/PBS_20_100.xlsx",
+            # "../environment/data/PBS_20_200.xlsx"]
 
     res_list = []
     time_list = []

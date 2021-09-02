@@ -251,22 +251,22 @@ population_size = 10
 n_generations = 500
 np.random.seed(seed=233423)
 random.seed(100)
-filename = ["../environment/data/PBS_5_25.xlsx",
-            "../environment/data/PBS_5_50.xlsx",
-            "../environment/data/PBS_5_100.xlsx",
-            "../environment/data/PBS_5_200.xlsx",
-            "../environment/data/PBS_10_25.xlsx",
-            "../environment/data/PBS_10_50.xlsx",
-            "../environment/data/PBS_10_100.xlsx",
-            "../environment/data/PBS_10_200.xlsx",
-            "../environment/data/PBS_15_25.xlsx",
-            "../environment/data/PBS_15_50.xlsx",
-            "../environment/data/PBS_15_100.xlsx",
-            "../environment/data/PBS_15_200.xlsx",
-            "../environment/data/PBS_20_25.xlsx",
-            "../environment/data/PBS_20_50.xlsx",
-            "../environment/data/PBS_20_100.xlsx",
-            "../environment/data/PBS_20_200.xlsx"]
+filename = ["../environment/data/PBS_5_75.xlsx",
+            "../environment/data/PBS_5_125.xlsx"]
+            # "../environment/data/PBS_6_75.xlsx",
+            # "../environment/data/PBS_6_100.xlsx",
+            # "../environment/data/PBS_6_125.xlsx",
+            # "../environment/data/PBS_10_50.xlsx",
+            # "../environment/data/PBS_10_100.xlsx",
+            # "../environment/data/PBS_10_200.xlsx",
+            # "../environment/data/PBS_15_25.xlsx",
+            # "../environment/data/PBS_15_50.xlsx",
+            # "../environment/data/PBS_15_100.xlsx",
+            # "../environment/data/PBS_15_200.xlsx",
+            # "../environment/data/PBS_20_25.xlsx",
+            # "../environment/data/PBS_20_50.xlsx",
+            # "../environment/data/PBS_20_100.xlsx",
+            # "../environment/data/PBS_20_200.xlsx"]
 evolve_time=[]
 make_span=[]
 
