@@ -30,18 +30,24 @@ class MyApp(QWidget):
     def create_inputs_tab(self):
         tab_input = QWidget()
 
-        self.button_file = QPushButton("Open File", self)
-        self.button_file.clicked.connect(self.open_file)
+        self.button_file_i = QPushButton("Open File", self)
+        self.button_file_i.clicked.connect(self.open_file)
+        self.label_file_i1 = QLabel("file path : ")
+        self.label_file_i2 = QLabel()
 
-        self.label_file1 = QLabel("file path : ")
-        self.label_file2 = QLabel()
+        self.table_data = QTableWidget()
+        self.table_data.setColumnCount(6)
+        self.table_data.setHorizontalHeaderLabels(
+            ["Plate Welding", "Front-side SAW", "Turn-over", "Rear-side SAW", "Longitudina Attachment", "Longitudinal Welding"])
+        self.table_data.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.table_data.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         hbox = QHBoxLayout()
         vbox = QVBoxLayout()
 
-        hbox.addWidget(self.button_file)
-        hbox.addWidget(self.label_file1)
-        hbox.addWidget(self.label_file2)
+        hbox.addWidget(self.button_file_i)
+        hbox.addWidget(self.label_file_i1)
+        hbox.addWidget(self.label_file_i2)
         hbox.addStretch(2)
         vbox.addLayout(hbox)
         vbox.addWidget(self.table_data)
@@ -56,14 +62,6 @@ class MyApp(QWidget):
 
         self.data = pd.read_excel(file_name[0], engine="openpyxl")
 
-        self.table_data = QTableWidget()
-        self.table_data.setColumnCount(len(self.data.columns))
-        self.table_data.setRowCount(len(self.data.index))
-        # self.table_data.setHorizontalHeaderLabels(
-        #     ["Project No.", "Location Code", "Activity Code", "Start Date", "Finish Date", "Duration"])
-        self.table_data.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.table_data.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
         idx = 0
         for i, row in self.data.iterrows():
             self.table_data.insertRow(idx)
@@ -72,6 +70,77 @@ class MyApp(QWidget):
             idx += 1
 
     def create_run_tab(self):
+        tab_run = QWidget()
+
+        self.button_file_r = QPushButton("Open File", self)
+        self.button_file_r.clicked.connect(self.open_file)
+        self.label_file_r1 = QLabel("file path : ")
+        self.label_file_r2 = QLabel()
+
+        self.button_opt = QPushButton(" " * 50 + "Optimize" + " " * 50, self)
+        self.button_opt.clicked.connect(self.optimize)
+
+        self.label_opt1 = QLabel("number of samples : ")
+        self.input_opt1 = QLineEdit(self)
+        self.label_opt2 = QLabel("temperature : ")
+        self.input_opt2 = QLineEdit(self)
+
+        self.button_eval = QPushButton(" " * 50 + "Evaluation" + " " * 50, self)
+        self.button_eval.clicked.connect(self.evaluate)
+
+        self.label_eval1 = QLabel("error in processing time : ")
+        self.input_eval1 = QLineEdit(self)
+        self.label_eval2 = QLabel("number of iterations : ")
+        self.input_eval2 = QLineEdit(self)
+        self.label_eval3 = QLabel("random seed : ")
+        self.input_eval3 = QLineEdit(self)
+
+        self.log = QTextBrowser()
+        self.log.setOpenExternalLinks(False)
+
+        hbox1 = QHBoxLayout()
+        hbox1.addWidget(self.button_file_r)
+        hbox1.addWidget(self.label_file_r1)
+        hbox1.addWidget(self.label_file_r2)
+
+        grid1 = QGridLayout()
+        grid1.addWidget(self.label_opt1, 0, 0)
+        grid1.addWidget(self.input_opt1, 0, 1)
+        grid1.addWidget(self.label_opt2, 1, 0)
+        grid1.addWidget(self.input_opt2, 1, 1)
+
+        hbox2 = QHBoxLayout()
+
+        grid2 = QGridLayout()
+        grid2.addWidget(self.label_eval1, 0, 0)
+        grid2.addWidget(self.input_eval1, 0, 1)
+        grid2.addWidget(self.label_eval2, 1, 0)
+        grid2.addWidget(self.input_eval2, 1, 1)
+        grid2.addWidget(self.label_eval3, 2, 0)
+        grid2.addWidget(self.input_eval3, 2, 1)
+
+        vbox1 = QVBoxLayout()
+        vbox1.addWidget(self.button_opt)
+        vbox1.addLayout(grid1)
+        vbox1.addWidget(self.button_eval)
+        vbox1.addLayout(grid2)
+
+        hbox2 = QHBoxLayout()
+        hbox2.addLayout(vbox1)
+        hbox2.addWidget(self.log)
+
+        vbox2 = QVBoxLayout()
+        vbox2.addLayout(hbox1)
+        vbox2.addLayout(hbox2)
+
+        tab_run.setLayout(vbox2)
+
+        return tab_run
+
+    def optimize(self):
+        pass
+
+    def evaluate(self):
         pass
 
     def create_results_tab(self):
