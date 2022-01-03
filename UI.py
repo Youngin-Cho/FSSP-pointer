@@ -1,4 +1,5 @@
 import sys
+import pandas as pd
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -36,10 +37,10 @@ class MyApp(QWidget):
         self.label_file2 = QLabel()
 
         self.table_data = QTableWidget()
-        self.table_data.setColumnCount(6)
-        self.table_data.setRowCount(20)
-        self.table_data.setHorizontalHeaderLabels(
-            ["Project No.", "Location Code", "Activity Code", "Start Date", "Finish Date", "Duration"])
+        # self.table_data.setColumnCount(6)
+        # self.table_data.setRowCount(20)
+        # self.table_data.setHorizontalHeaderLabels(
+        #     ["Project No.", "Location Code", "Activity Code", "Start Date", "Finish Date", "Duration"])
         self.table_data.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table_data.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
@@ -58,7 +59,17 @@ class MyApp(QWidget):
         return tab_input
 
     def open_file(self):
-        pass
+        file_name = QFileDialog.getOpenFileName(self)
+        self.label_file2.setText(file_name[0])
+
+        self.data = pd.read_excel(file_name[0], engine="openpyxl")
+
+        idx = 0
+        for i, row in self.data.iterrows():
+            self.table_data.insertRow(idx)
+            for j, pt in row.iteritems():
+                self.table_data.setItem(idx, j, QTableWidgetItem(str(pt)))
+            idx += 1
 
     def create_run_tab(self):
         pass
