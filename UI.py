@@ -36,14 +36,6 @@ class MyApp(QWidget):
         self.label_file1 = QLabel("file path : ")
         self.label_file2 = QLabel()
 
-        self.table_data = QTableWidget()
-        # self.table_data.setColumnCount(6)
-        # self.table_data.setRowCount(20)
-        # self.table_data.setHorizontalHeaderLabels(
-        #     ["Project No.", "Location Code", "Activity Code", "Start Date", "Finish Date", "Duration"])
-        self.table_data.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.table_data.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
         hbox = QHBoxLayout()
         vbox = QVBoxLayout()
 
@@ -63,6 +55,14 @@ class MyApp(QWidget):
         self.label_file2.setText(file_name[0])
 
         self.data = pd.read_excel(file_name[0], engine="openpyxl")
+
+        self.table_data = QTableWidget()
+        self.table_data.setColumnCount(len(self.data.columns))
+        self.table_data.setRowCount(len(self.data.index))
+        # self.table_data.setHorizontalHeaderLabels(
+        #     ["Project No.", "Location Code", "Activity Code", "Start Date", "Finish Date", "Duration"])
+        self.table_data.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.table_data.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         idx = 0
         for i, row in self.data.iterrows():
