@@ -24,7 +24,7 @@ class MyApp(QWidget):
         self.setLayout(self.layout)
 
         self.setWindowTitle("SAS")
-        self.resize(1000, 800)
+        self.resize(1000, 500)
         self.show()
 
     def create_inputs_tab(self):
@@ -103,37 +103,26 @@ class MyApp(QWidget):
         hbox1.addWidget(self.label_file_r1)
         hbox1.addWidget(self.label_file_r2)
 
-        grid1 = QGridLayout()
-        grid1.addWidget(self.label_opt1, 0, 0)
-        grid1.addWidget(self.input_opt1, 0, 1)
-        grid1.addWidget(self.label_opt2, 1, 0)
-        grid1.addWidget(self.input_opt2, 1, 1)
-
-        hbox2 = QHBoxLayout()
-
-        grid2 = QGridLayout()
-        grid2.addWidget(self.label_eval1, 0, 0)
-        grid2.addWidget(self.input_eval1, 0, 1)
-        grid2.addWidget(self.label_eval2, 1, 0)
-        grid2.addWidget(self.input_eval2, 1, 1)
-        grid2.addWidget(self.label_eval3, 2, 0)
-        grid2.addWidget(self.input_eval3, 2, 1)
+        grid = QGridLayout()
+        grid.addWidget(self.button_opt, 0, 0, 1, 2)
+        grid.addWidget(self.label_opt1, 1, 0)
+        grid.addWidget(self.input_opt1, 1, 1)
+        grid.addWidget(self.label_opt2, 2, 0)
+        grid.addWidget(self.input_opt2, 2, 1)
+        grid.addWidget(self.button_eval, 3, 0, 1, 2)
+        grid.addWidget(self.label_eval1, 4, 0)
+        grid.addWidget(self.input_eval1, 4, 1)
+        grid.addWidget(self.label_eval2, 5, 0)
+        grid.addWidget(self.input_eval2, 5, 1)
+        grid.addWidget(self.label_eval3, 6, 0)
+        grid.addWidget(self.input_eval3, 6, 1)
+        grid.addWidget(self.log, 0, 2, 7, 1)
 
         vbox1 = QVBoxLayout()
-        vbox1.addWidget(self.button_opt)
-        vbox1.addLayout(grid1)
-        vbox1.addWidget(self.button_eval)
-        vbox1.addLayout(grid2)
+        vbox1.addLayout(hbox1)
+        vbox1.addLayout(grid)
 
-        hbox2 = QHBoxLayout()
-        hbox2.addLayout(vbox1)
-        hbox2.addWidget(self.log)
-
-        vbox2 = QVBoxLayout()
-        vbox2.addLayout(hbox1)
-        vbox2.addLayout(hbox2)
-
-        tab_run.setLayout(vbox2)
+        tab_run.setLayout(vbox1)
 
         return tab_run
 
