@@ -58,7 +58,7 @@ class MyApp(QWidget):
 
     def open_file(self):
         file_name = QFileDialog.getOpenFileName(self)
-        self.label_file2.setText(file_name[0])
+        self.label_file_i2.setText(file_name[0])
 
         self.data = pd.read_excel(file_name[0], engine="openpyxl")
 
@@ -73,7 +73,7 @@ class MyApp(QWidget):
         tab_run = QWidget()
 
         self.button_file_r = QPushButton("Open File", self)
-        self.button_file_r.clicked.connect(self.open_file)
+        self.button_file_r.clicked.connect(self.open_file_model)
         self.label_file_r1 = QLabel("file path : ")
         self.label_file_r2 = QLabel()
 
@@ -98,33 +98,33 @@ class MyApp(QWidget):
         self.log = QTextBrowser()
         self.log.setOpenExternalLinks(False)
 
-        hbox1 = QHBoxLayout()
-        hbox1.addWidget(self.button_file_r)
-        hbox1.addWidget(self.label_file_r1)
-        hbox1.addWidget(self.label_file_r2)
-
         grid = QGridLayout()
-        grid.addWidget(self.button_opt, 0, 0, 1, 2)
-        grid.addWidget(self.label_opt1, 1, 0)
-        grid.addWidget(self.input_opt1, 1, 1)
-        grid.addWidget(self.label_opt2, 2, 0)
-        grid.addWidget(self.input_opt2, 2, 1)
-        grid.addWidget(self.button_eval, 3, 0, 1, 2)
-        grid.addWidget(self.label_eval1, 4, 0)
-        grid.addWidget(self.input_eval1, 4, 1)
-        grid.addWidget(self.label_eval2, 5, 0)
-        grid.addWidget(self.input_eval2, 5, 1)
-        grid.addWidget(self.label_eval3, 6, 0)
-        grid.addWidget(self.input_eval3, 6, 1)
-        grid.addWidget(self.log, 0, 2, 7, 1)
+        grid.addWidget(self.button_file_r, 0 ,0)
+        grid.addWidget(self.label_file_r1, 0, 1)
+        grid.addWidget(self.label_file_r2, 0, 2, 1, 2)
+        grid.addWidget(self.button_opt, 1, 0, 1, 2)
+        grid.addWidget(self.label_opt1, 2, 0)
+        grid.addWidget(self.input_opt1, 2, 1)
+        grid.addWidget(self.label_opt2, 3, 0)
+        grid.addWidget(self.input_opt2, 3, 1)
+        grid.addWidget(self.button_eval, 4, 0, 1, 2)
+        grid.addWidget(self.label_eval1, 5, 0)
+        grid.addWidget(self.input_eval1, 5, 1)
+        grid.addWidget(self.label_eval2, 6, 0)
+        grid.addWidget(self.input_eval2, 6, 1)
+        grid.addWidget(self.label_eval3, 7, 0)
+        grid.addWidget(self.input_eval3, 7, 1)
+        grid.addWidget(self.log, 1, 2, 8, 2)
+        # grid.setColumnStretch(0, 1)
+        # grid.setColumnStretch(1, 1)
+        # grid.setColumnStretch(2, 2)
 
-        vbox1 = QVBoxLayout()
-        vbox1.addLayout(hbox1)
-        vbox1.addLayout(grid)
-
-        tab_run.setLayout(vbox1)
+        tab_run.setLayout(grid)
 
         return tab_run
+
+    def open_file_model(self):
+        pass
 
     def optimize(self):
         pass
