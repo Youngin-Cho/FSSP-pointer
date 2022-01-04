@@ -1,8 +1,10 @@
 import sys
 import pandas as pd
+import matplotlib.pyplot as plt
 
-from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 
 class MyApp(QWidget):
@@ -17,40 +19,39 @@ class MyApp(QWidget):
 
         self.tabs = QTabWidget()
         self.tabs.addTab(self.create_inputs_tab(), "input")
-        self.tabs.addTab(self.create_run_tab(), "optimize")
-        self.tabs.addTab(self.create_results_tab(), "result")
+        self.tabs.addTab(self.create_optimize_tab(), "optimize")
 
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
 
         self.setWindowTitle("SAS")
-        self.resize(1000, 500)
+        self.resize(1500, 800)
         self.show()
 
     def create_inputs_tab(self):
         tab_input = QWidget()
 
-        self.button_file_i = QPushButton("Open File", self)
-        self.button_file_i.clicked.connect(self.open_file)
-        self.label_file_i1 = QLabel("file path : ")
-        self.label_file_i2 = QLabel()
+        self.button_file = QPushButton("Open File", self)
+        self.button_file.clicked.connect(self.open_file)
+        self.label_file1 = QLabel("file path : ")
+        self.label_file2 = QLabel()
 
-        self.table_data = QTableWidget()
-        self.table_data.setColumnCount(6)
-        self.table_data.setHorizontalHeaderLabels(
-            ["Plate Welding", "Front-side SAW", "Turn-over", "Rear-side SAW", "Longitudina Attachment", "Longitudinal Welding"])
-        self.table_data.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.table_data.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table = QTableWidget()
+        self.table.setColumnCount(7)
+        self.table.setHorizontalHeaderLabels(
+            ["Block ID", "Plate Welding", "Front-side SAW", "Turn-over", "Rear-side SAW", "Longi. Attachment", "Longi. Welding"])
+        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         hbox = QHBoxLayout()
         vbox = QVBoxLayout()
 
-        hbox.addWidget(self.button_file_i)
-        hbox.addWidget(self.label_file_i1)
-        hbox.addWidget(self.label_file_i2)
+        hbox.addWidget(self.button_file)
+        hbox.addWidget(self.label_file1)
+        hbox.addWidget(self.label_file2)
         hbox.addStretch(2)
         vbox.addLayout(hbox)
-        vbox.addWidget(self.table_data)
+        vbox.addWidget(self.table)
 
         tab_input.setLayout(vbox)
 
@@ -58,83 +59,94 @@ class MyApp(QWidget):
 
     def open_file(self):
         file_name = QFileDialog.getOpenFileName(self)
-        self.label_file_i2.setText(file_name[0])
+        self.label_file2.setText(file_name[0])
 
         self.data = pd.read_excel(file_name[0], engine="openpyxl")
 
         idx = 0
         for i, row in self.data.iterrows():
-            self.table_data.insertRow(idx)
+            self.table.insertRow(idx)
             for j, pt in row.iteritems():
-                self.table_data.setItem(idx, j, QTableWidgetItem(str(pt)))
+                self.table.setItem(idx, j, QTableWidgetItem(str(pt)))
             idx += 1
 
-    def create_run_tab(self):
-        tab_run = QWidget()
+    def create_optimize_tab(self):
+        tab_optimize = QWidget()
 
-        self.button_file_r = QPushButton("Open File", self)
-        self.button_file_r.clicked.connect(self.open_file_model)
-        self.label_file_r1 = QLabel("file path : ")
-        self.label_file_r2 = QLabel()
-
-        self.button_opt = QPushButton(" " * 50 + "Optimize" + " " * 50, self)
-        self.button_opt.clicked.connect(self.optimize)
+        # 하이퍼파라미터 입력 그룹 박스
+        groupbox1 = QGroupBox('Hyper-parameters')
 
         self.label_opt1 = QLabel("number of samples : ")
         self.input_opt1 = QLineEdit(self)
         self.label_opt2 = QLabel("temperature : ")
         self.input_opt2 = QLineEdit(self)
-
-        self.button_eval = QPushButton(" " * 50 + "Evaluation" + " " * 50, self)
-        self.button_eval.clicked.connect(self.evaluate)
-
         self.label_eval1 = QLabel("error in processing time : ")
         self.input_eval1 = QLineEdit(self)
         self.label_eval2 = QLabel("number of iterations : ")
         self.input_eval2 = QLineEdit(self)
-        self.label_eval3 = QLabel("random seed : ")
-        self.input_eval3 = QLineEdit(self)
 
+        grid = QGridLayout()
+        grid.addWidget(self.label_opt1, 0, 0)
+        grid.addWidget(self.input_opt1, 0, 1)
+        grid.addWidget(self.label_opt2, 1, 0)
+        grid.addWidget(self.input_opt2, 1, 1)
+        grid.addWidget(self.label_eval1, 2, 0)
+        grid.addWidget(self.input_eval1, 2, 1)
+        grid.addWidget(self.label_eval2, 3, 0)
+        grid.addWidget(self.input_eval2, 3, 1)
+
+        groupbox1.setLayout(grid)
+
+        # 최적화 및 시뮬레이션 수행 그룹 박스
+        groupbox2 = QGroupBox('Opitimization')
+
+        self.button_run = QPushButton(" " * 5 + "RUN" + " " * 5, self)
+        self.button_run.clicked.connect(self.run)
         self.log = QTextBrowser()
         self.log.setOpenExternalLinks(False)
 
         grid = QGridLayout()
-        grid.addWidget(self.button_file_r, 0 ,0)
-        grid.addWidget(self.label_file_r1, 0, 1)
-        grid.addWidget(self.label_file_r2, 0, 2, 1, 2)
-        grid.addWidget(self.button_opt, 1, 0, 1, 2)
-        grid.addWidget(self.label_opt1, 2, 0)
-        grid.addWidget(self.input_opt1, 2, 1)
-        grid.addWidget(self.label_opt2, 3, 0)
-        grid.addWidget(self.input_opt2, 3, 1)
-        grid.addWidget(self.button_eval, 4, 0, 1, 2)
-        grid.addWidget(self.label_eval1, 5, 0)
-        grid.addWidget(self.input_eval1, 5, 1)
-        grid.addWidget(self.label_eval2, 6, 0)
-        grid.addWidget(self.input_eval2, 6, 1)
-        grid.addWidget(self.label_eval3, 7, 0)
-        grid.addWidget(self.input_eval3, 7, 1)
-        grid.addWidget(self.log, 1, 2, 8, 2)
-        # grid.setColumnStretch(0, 1)
-        # grid.setColumnStretch(1, 1)
-        # grid.setColumnStretch(2, 2)
+        grid.addWidget(self.button_run, 0, 0)
+        grid.addWidget(self.log, 1, 0)
 
-        tab_run.setLayout(grid)
+        groupbox2.setLayout(grid)
 
-        return tab_run
+        # 결과 확인 그룹 박스
+        groupbox3 = QGroupBox('Results')
 
-    def open_file_model(self):
+        self.table_res = QTableWidget()
+        self.table_res.setColumnCount(1)
+        self.table_res.setHorizontalHeaderLabels(["block ID"])
+        self.table_res.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.fig = plt.Figure()
+        self.canvas = FigureCanvas(self.fig)
+        self.ax = self.fig.add_subplot()
+        self.canvas.draw()
+        self.label_res1 = QLabel("makespan : ")
+        self.label_res2 = QLabel()
+
+        grid = QGridLayout()
+        grid.addWidget(self.table_res, 0, 0, 1, 2)
+        grid.addWidget(self.canvas, 0, 2, 1, 2)
+        grid.addWidget(self.label_res1, 1, 0)
+        grid.addWidget(self.label_res2, 1, 1)
+
+        groupbox3.setLayout(grid)
+
+        vbox = QVBoxLayout()
+        vbox.addWidget(groupbox1)
+        vbox.addWidget(groupbox2)
+
+        hbox = QHBoxLayout()
+        hbox.addLayout(vbox, stretch=2)
+        hbox.addWidget(groupbox3)
+
+        tab_optimize.setLayout(hbox)
+
+        return tab_optimize
+
+    def run(self):
         pass
-
-    def optimize(self):
-        pass
-
-    def evaluate(self):
-        pass
-
-    def create_results_tab(self):
-        pass
-
 
 
 if __name__ == "__main__":
