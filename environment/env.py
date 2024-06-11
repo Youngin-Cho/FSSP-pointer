@@ -61,11 +61,7 @@ class PanelBlockShop:
         num_of_process = blocks.shape[1]
         temp = np.zeros((num_of_blocks + 1, num_of_process + 1))
         for i in range(1, num_of_blocks + 1):
-            temp[i, 0] = 0
             for j in range(1, num_of_process + 1):
-                if i == 1:
-                    temp[0, j] = 0
-
                 if temp[i - 1, j] > temp[i, j - 1]:
                     temp[i, j] = temp[i - 1, j] + blocks_numpy[sequence_numpy[i - 1], j - 1]
                 else:

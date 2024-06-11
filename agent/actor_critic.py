@@ -11,7 +11,6 @@ from agent.critic import PtrNet2
 from environment.env import PanelBlockShop
 
 
-# torch.autograd.set_detect_anomaly(True)
 torch.backends.cudnn.benchmark = True
 
 
@@ -84,8 +83,8 @@ def train_model(env, params, log_path=None):
         act_loss = (adv * ll).mean()
         act_optim.zero_grad()
         act_loss.backward()
-        act_optim.step()
         nn.utils.clip_grad_norm_(act_model.parameters(), max_norm=1., norm_type=2)
+        act_optim.step()
         if params["is_lr_decay"]:
             act_lr_scheduler.step()
         ave_act_loss += act_loss.item()
@@ -95,24 +94,24 @@ def train_model(env, params, log_path=None):
         if s % params["log_step"] == 0:
             t2 = time()
             if params["use_critic"]:
-                print('step:%d/%d, actic loss:%1.3f, critic loss:%1.3f, L:%1.3f, %dmin%dsec' % (
+                print('step:%d/%d, actor loss:%1.3f, critic loss:%1.3f, L:%1.3f, %dmin%dsec' % (
                     s, params["step"], ave_act_loss / (s + 1), ave_cri_loss / (s + 1), ave_makespan / (s + 1),
                     (t2 - t1) // 60, (t2 - t1) % 60))
                 if log_path is None:
                     log_path = params["log_dir"] + '/%s_train.csv' % date
                     with open(log_path, 'w') as f:
-                        f.write('step,actic loss,critic loss,average makespan,time\n')
+                        f.write('step,actor loss,critic loss,average makespan,time\n')
                 else:
                     with open(log_path, 'a') as f:
                         f.write('%d,%1.4f,%1.4f,%dmin%dsec\n' % (s, ave_act_loss / (s + 1), ave_makespan / (s + 1),
                                                                  (t2 - t1) // 60, (t2 - t1) % 60))
             else:
-                print('step:%d/%d, actic loss:%1.3f, L:%1.3f, %dmin%dsec' % (
+                print('step:%d/%d, actor loss:%1.3f, L:%1.3f, %dmin%dsec' % (
                     s, params["step"], ave_act_loss / (s + 1), ave_makespan / (s + 1), (t2 - t1) // 60, (t2 - t1) % 60))
                 if log_path is None:
                     log_path = params["log_dir"] + '/%s_train.csv' % date
                     with open(log_path, 'w') as f:
-                        f.write('step,actic loss,average makespan,time\n')
+                        f.write('step,actor loss,average makespan,time\n')
                 else:
                     with open(log_path, 'a') as f:
                         f.write('%d,%1.4f,%1.4f,%dmin%dsec\n' % (s, ave_act_loss / (s + 1), ave_makespan / (s + 1),

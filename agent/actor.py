@@ -76,7 +76,6 @@ class PtrNet1(nn.Module):
                 next_block = y[:, i].long()
             dec_input = torch.gather(input=embed_enc_inputs, dim=1,
                                      index=next_block.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, embed))
-            log_p.detach().cpu()
 
             pi_list.append(next_block)
             log_ps.append(log_p)
